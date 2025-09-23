@@ -161,8 +161,12 @@ UPDATE profiles SET role = 'admin' WHERE id = 'USER_ID_HERE';
 
 #### 4. CapRover Deployment
 - Erstelle App in CapRover
-- Füge Umgebungsvariablen hinzu (aus .env.local)
-- Konfiguriere GitHub Secrets:
+- **WICHTIG**: Füge Umgebungsvariablen in CapRover hinzu (siehe CAPROVER_ENV.md):
+  - NEXT_PUBLIC_SUPABASE_URL
+  - NEXT_PUBLIC_SUPABASE_ANON_KEY
+  - SUPABASE_SERVICE_ROLE_KEY
+- Deploye die App via GitHub oder manuell
+- Konfiguriere GitHub Secrets (falls automatisches Deployment gewünscht):
   - CAPROVER_SERVER
   - CAPROVER_APP
   - CAPROVER_APP_TOKEN
