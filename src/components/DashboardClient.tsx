@@ -45,7 +45,7 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
           <div className="flex h-16 justify-between">
             <div className="flex">
               <div className="flex flex-shrink-0 items-center">
-                <h1 className="text-lg sm:text-xl font-bold text-primary-600">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-700">
                   <span className="hidden sm:inline">jVC Terminverwaltung</span>
                   <span className="sm:hidden">jVC</span>
                 </h1>
