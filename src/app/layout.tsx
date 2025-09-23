@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'jVC - Jugendverband Terminverwaltung',
-  description: 'Terminverwaltung und Verfügbarkeitsplanung für unseren Jugendverband',
+  title: 'jVC - Terminverwaltung',
+  description: 'Terminverwaltung und Verfügbarkeitsplanung',
 }
 
 export default function RootLayout({

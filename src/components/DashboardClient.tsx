@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 import CalendarView from '@/components/CalendarView'
+import AvailabilityView from '@/components/AvailabilityView'
 import AdminPanel from '@/components/AdminPanel'
 import ProfileSettings from '@/components/ProfileSettings'
 
@@ -80,7 +81,7 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {activeTab === 'calendar' && <CalendarView userRole={profile.role} />}
-        {activeTab === 'availability' && <div>Verfügbarkeitsansicht (in Entwicklung)</div>}
+        {activeTab === 'availability' && <AvailabilityView />}
         {activeTab === 'profile' && <ProfileSettings user={user} profile={profile} />}
         {activeTab === 'admin' && profile.role === 'admin' && <AdminPanel />}
       </main>
