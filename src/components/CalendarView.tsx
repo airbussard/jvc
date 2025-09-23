@@ -22,11 +22,13 @@ interface CalendarViewProps {
 
 interface CustomEvent extends CalendarEvent {
   id: string
+  allDay?: boolean
   description?: string | null
   location?: string | null
   color?: string | null
   created_by?: string | null
   hasMyAttendance?: boolean
+  is_all_day?: boolean
 }
 
 export default function CalendarView({ userRole }: CalendarViewProps) {
@@ -58,11 +60,12 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
 
       const attendedEventIds = attendances?.map((a: any) => a.event_id) || []
 
-      const formattedEvents: CustomEvent[] = data.map((event: Event) => ({
+      const formattedEvents: CustomEvent[] = data.map((event: any) => ({
         id: event.id,
         title: event.title,
         start: new Date(event.start_datetime),
         end: new Date(event.end_datetime),
+        allDay: event.is_all_day || false,
         description: event.description,
         location: event.location,
         color: event.color,
@@ -171,6 +174,7 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
               selectable={canEditEvents}
               eventPropGetter={eventStyleGetter}
               views={['month', 'agenda']}
+              length={365}
               messages={{
                 today: 'Heute',
                 previous: '←',

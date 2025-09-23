@@ -41,6 +41,7 @@ export type Database = {
           end_datetime: string
           location: string | null
           color: string | null
+          is_all_day: boolean
           created_by: string
           created_at: string
           updated_at: string
@@ -53,6 +54,7 @@ export type Database = {
           end_datetime: string
           location?: string | null
           color?: string | null
+          is_all_day?: boolean
           created_by: string
           created_at?: string
           updated_at?: string
@@ -65,6 +67,7 @@ export type Database = {
           end_datetime?: string
           location?: string | null
           color?: string | null
+          is_all_day?: boolean
           created_by?: string
           created_at?: string
           updated_at?: string

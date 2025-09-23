@@ -31,6 +31,7 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
   const [description, setDescription] = useState(event?.description || '')
   const [location, setLocation] = useState(event?.location || '')
   const [color, setColor] = useState(event?.color || '#3b82f6')
+  const [isAllDay, setIsAllDay] = useState(event?.is_all_day || false)
   const [startDate, setStartDate] = useState('')
   const [startTime, setStartTime] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -52,6 +53,7 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
       setEndDate(format(end, 'yyyy-MM-dd'))
       setEndTime(format(end, 'HH:mm'))
       setColor(event.color || '#3b82f6')
+      setIsAllDay(event.is_all_day || false)
 
       // Load attendances if event exists
       if (event.id) {
@@ -140,14 +142,19 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
     setSaving(true)
     setError(null)
 
-    const startDateTime = new Date(`${startDate}T${startTime}`)
-    const endDateTime = new Date(`${endDate}T${endTime}`)
+    const startDateTime = isAllDay
+      ? new Date(`${startDate}T00:00:00`)
+      : new Date(`${startDate}T${startTime}`)
+    const endDateTime = isAllDay
+      ? new Date(`${endDate}T23:59:59`)
+      : new Date(`${endDate}T${endTime}`)
 
     const eventData = {
       title,
       description,
       location,
       color,
+      is_all_day: isAllDay,
       start_datetime: startDateTime.toISOString(),
       end_datetime: endDateTime.toISOString(),
     }
@@ -252,6 +259,21 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
 
               {canEdit && (
                 <div>
+                  <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={isAllDay}
+                      onChange={(e) => setIsAllDay(e.target.checked)}
+                      disabled={!canEdit}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span>Ganztägiger Termin</span>
+                  </label>
+                </div>
+              )}
+
+              {canEdit && (
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Farbe</label>
                   <div className="flex space-x-2">
                     {colorOptions.map((option) => (
@@ -271,7 +293,9 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Startdatum *</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    {isAllDay ? 'Startdatum *' : 'Startdatum *'}
+                  </label>
                   <input
                     type="date"
                     value={startDate}
@@ -281,22 +305,26 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Startzeit *</label>
-                  <input
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    required
-                    disabled={!canEdit}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                  />
-                </div>
+                {!isAllDay && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Startzeit *</label>
+                    <input
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      required
+                      disabled={!canEdit}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Enddatum *</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    {isAllDay ? 'Enddatum *' : 'Enddatum *'}
+                  </label>
                   <input
                     type="date"
                     value={endDate}
@@ -306,17 +334,19 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Endzeit *</label>
-                  <input
-                    type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    required
-                    disabled={!canEdit}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                  />
-                </div>
+                {!isAllDay && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Endzeit *</label>
+                    <input
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      required
+                      disabled={!canEdit}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

@@ -30,13 +30,23 @@ export default function ExportDialog({ events, onClose }: ExportDialogProps) {
     })
 
     filteredEvents.forEach(event => {
-      calendar.createEvent({
-        start: event.start,
-        end: event.end,
+      const eventData: any = {
         summary: event.title,
         description: event.description || '',
         location: event.location || '',
-      })
+      }
+
+      if (event.allDay || event.is_all_day) {
+        // For all-day events, use DATE instead of DATE-TIME
+        eventData.start = event.start
+        eventData.end = event.end
+        eventData.allDay = true
+      } else {
+        eventData.start = event.start
+        eventData.end = event.end
+      }
+
+      calendar.createEvent(eventData)
     })
 
     const icsContent = calendar.toString()
