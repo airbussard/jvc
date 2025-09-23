@@ -85,15 +85,18 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
         end_date: newVacationEnd,
         note: newVacationNote || null,
       })
+      .select()
+      .single()
 
     if (!error) {
-      loadVacations()
+      await loadVacations()
       setNewVacationStart('')
       setNewVacationEnd('')
       setNewVacationNote('')
       setMessage({ type: 'success', text: 'Urlaub erfolgreich hinzugefügt!' })
     } else {
-      setMessage({ type: 'error', text: 'Fehler beim Hinzufügen des Urlaubs' })
+      console.error('Error adding vacation:', error)
+      setMessage({ type: 'error', text: `Fehler beim Hinzufügen des Urlaubs: ${error.message}` })
     }
   }
 
@@ -104,8 +107,10 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
       .eq('id', id)
 
     if (!error) {
-      loadVacations()
+      await loadVacations()
       setMessage({ type: 'success', text: 'Urlaub erfolgreich gelöscht!' })
+    } else {
+      setMessage({ type: 'error', text: `Fehler beim Löschen: ${error.message}` })
     }
   }
 
@@ -119,14 +124,17 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
         date: newUnavailableDate,
         reason: newUnavailableReason || null,
       })
+      .select()
+      .single()
 
     if (!error) {
-      loadUnavailableDays()
+      await loadUnavailableDays()
       setNewUnavailableDate('')
       setNewUnavailableReason('')
       setMessage({ type: 'success', text: 'F-Tag erfolgreich hinzugefügt!' })
     } else {
-      setMessage({ type: 'error', text: 'Fehler beim Hinzufügen des F-Tags' })
+      console.error('Error adding F-day:', error)
+      setMessage({ type: 'error', text: `Fehler beim Hinzufügen des F-Tags: ${error.message}` })
     }
   }
 
@@ -137,8 +145,10 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
       .eq('id', id)
 
     if (!error) {
-      loadUnavailableDays()
+      await loadUnavailableDays()
       setMessage({ type: 'success', text: 'F-Tag erfolgreich gelöscht!' })
+    } else {
+      setMessage({ type: 'error', text: `Fehler beim Löschen: ${error.message}` })
     }
   }
 
