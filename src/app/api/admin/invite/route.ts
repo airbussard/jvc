@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    if (!profile || profile.role !== 'admin') {
+    if (!profile || (profile as any).role !== 'admin') {
       return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 })
     }
 

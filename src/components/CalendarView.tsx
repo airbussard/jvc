@@ -22,9 +22,9 @@ interface CalendarViewProps {
 
 interface CustomEvent extends CalendarEvent {
   id: string
-  description?: string
-  location?: string
-  created_by?: string
+  description?: string | null
+  location?: string | null
+  created_by?: string | null
 }
 
 export default function CalendarView({ userRole }: CalendarViewProps) {

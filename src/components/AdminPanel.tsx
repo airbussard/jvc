@@ -69,7 +69,7 @@ export default function AdminPanel() {
   }
 
   const handleRoleChange = async (userId: string, newRole: Profile['role']) => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('profiles')
       .update({ role: newRole })
       .eq('id', userId)

@@ -61,7 +61,7 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
     setSaving(true)
     setMessage(null)
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('profiles')
       .update({ full_name: fullName })
       .eq('id', user.id)
@@ -77,7 +77,7 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
   const handleAddVacation = async () => {
     if (!newVacationStart || !newVacationEnd) return
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('vacations')
       .insert({
         user_id: user.id,
@@ -98,7 +98,7 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
   }
 
   const handleDeleteVacation = async (id: string) => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('vacations')
       .delete()
       .eq('id', id)
@@ -112,7 +112,7 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
   const handleAddUnavailableDay = async () => {
     if (!newUnavailableDate) return
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('unavailable_days')
       .insert({
         user_id: user.id,
@@ -131,7 +131,7 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
   }
 
   const handleDeleteUnavailableDay = async (id: string) => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('unavailable_days')
       .delete()
       .eq('id', id)

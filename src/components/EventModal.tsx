@@ -54,7 +54,7 @@ export default function EventModal({ event, canEdit, onClose, onSave }: EventMod
 
     try {
       if (event?.id) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('events')
           .update(eventData)
           .eq('id', event.id)
@@ -62,7 +62,7 @@ export default function EventModal({ event, canEdit, onClose, onSave }: EventMod
         if (error) throw error
       } else {
         const { data: { user } } = await supabase.auth.getUser()
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('events')
           .insert({
             ...eventData,
