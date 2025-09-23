@@ -99,7 +99,7 @@ export default function AdminPanel() {
           )}
 
           <form onSubmit={handleInvite} className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700">E-Mail-Adresse</label>
                 <input
@@ -107,7 +107,7 @@ export default function AdminPanel() {
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
                 />
               </div>
 
@@ -118,16 +118,16 @@ export default function AdminPanel() {
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
                 />
               </div>
 
-              <div>
+              <div className="sm:col-span-2 lg:col-span-1">
                 <label className="block text-sm font-medium text-gray-700">Rolle</label>
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as Profile['role'])}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
                 >
                   <option value="normal">Normal</option>
                   <option value="moderator">Moderator</option>
@@ -139,7 +139,7 @@ export default function AdminPanel() {
             <button
               type="submit"
               disabled={inviting}
-              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 w-full sm:w-auto"
             >
               {inviting ? 'Sende Einladung...' : 'Einladung senden'}
             </button>
@@ -156,58 +156,89 @@ export default function AdminPanel() {
           {loading ? (
             <p className="text-gray-500">Lade Benutzer...</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      E-Mail
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Rolle
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Erstellt am
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Aktionen
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
-                    <tr key={user.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {user.full_name || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {user.id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <select
-                          value={user.role}
-                          onChange={(e) => handleRoleChange(user.id, e.target.value as Profile['role'])}
-                          className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                        >
-                          <option value="normal">Normal</option>
-                          <option value="moderator">Moderator</option>
-                          <option value="admin">Administrator</option>
-                        </select>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <>
+              {/* Mobile view: Cards */}
+              <div className="sm:hidden space-y-4">
+                {users.map((user) => (
+                  <div key={user.id} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                    <div>
+                      <span className="text-xs text-gray-500 uppercase">Name</span>
+                      <p className="font-medium text-gray-900">{user.full_name || '-'}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs text-gray-500 uppercase">E-Mail</span>
+                      <p className="text-sm text-gray-600 break-all">{user.id}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs text-gray-500 uppercase block mb-1">Rolle</span>
+                      <select
+                        value={user.role}
+                        onChange={(e) => handleRoleChange(user.id, e.target.value as Profile['role'])}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
+                      >
+                        <option value="normal">Normal</option>
+                        <option value="moderator">Moderator</option>
+                        <option value="admin">Administrator</option>
+                      </select>
+                    </div>
+                    <div>
+                      <span className="text-xs text-gray-500 uppercase">Erstellt am</span>
+                      <p className="text-sm text-gray-600">
                         {new Date(user.created_at).toLocaleDateString('de-DE')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        -
-                      </td>
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop view: Table */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        E-Mail
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Rolle
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Erstellt am
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {users.map((user) => (
+                      <tr key={user.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {user.full_name || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {user.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <select
+                            value={user.role}
+                            onChange={(e) => handleRoleChange(user.id, e.target.value as Profile['role'])}
+                            className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
+                          >
+                            <option value="normal">Normal</option>
+                            <option value="moderator">Moderator</option>
+                            <option value="admin">Administrator</option>
+                          </select>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(user.created_at).toLocaleDateString('de-DE')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>

@@ -120,14 +120,15 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
   return (
     <div className="bg-white rounded-lg shadow">
       <div className="p-4 border-b border-gray-200">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
           <h2 className="text-lg font-medium text-gray-900">Terminkalender</h2>
-          <div className="space-x-2">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
             <button
               onClick={() => setShowExportDialog(true)}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 w-full sm:w-auto"
             >
-              Kalender exportieren
+              <span className="hidden sm:inline">Kalender exportieren</span>
+              <span className="sm:hidden">Exportieren</span>
             </button>
             {canEditEvents && (
               <button
@@ -140,7 +141,7 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
                   })
                   setShowEventModal(true)
                 }}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 w-full sm:w-auto"
               >
                 Neuer Termin
               </button>
@@ -149,7 +150,44 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
         </div>
       </div>
 
-      <div style={{ height: '600px' }} className="p-4">
+      <div className="p-2 sm:p-4 overflow-x-auto">
+        <div style={{ height: '400px' }} className="sm:hidden">
+          {loading ? (
+            <div className="flex justify-center items-center h-full">
+              <div className="text-gray-500">Lade Termine...</div>
+            </div>
+          ) : (
+            <Calendar
+              localizer={localizer}
+              events={events}
+              startAccessor="start"
+              endAccessor="end"
+              view={view === 'agenda' || view === 'month' ? view : 'month'}
+              onView={(newView) => setView(newView)}
+              date={date}
+              onNavigate={(newDate) => setDate(newDate)}
+              onSelectEvent={handleSelectEvent}
+              onSelectSlot={handleSelectSlot}
+              selectable={canEditEvents}
+              eventPropGetter={eventStyleGetter}
+              views={['month', 'agenda']}
+              messages={{
+                today: 'Heute',
+                previous: '←',
+                next: '→',
+                month: 'Monat',
+                week: 'Woche',
+                day: 'Tag',
+                agenda: 'Liste',
+                date: 'Datum',
+                time: 'Zeit',
+                event: 'Termin',
+                noEventsInRange: 'Keine Termine',
+              }}
+            />
+          )}
+        </div>
+        <div style={{ height: '600px' }} className="hidden sm:block">
         {loading ? (
           <div className="flex justify-center items-center h-full">
             <div className="text-gray-500">Lade Termine...</div>
@@ -183,6 +221,7 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
             }}
           />
         )}
+        </div>
       </div>
 
       {showEventModal && (

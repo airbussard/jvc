@@ -167,7 +167,7 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
           <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
             Persönliche Daten
           </h3>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Name</label>
               <input
@@ -191,7 +191,7 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
             <button
               onClick={handleSaveProfile}
               disabled={saving}
-              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700"
+              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 w-full sm:w-auto"
             >
               {saving ? 'Speichern...' : 'Speichern'}
             </button>
@@ -205,31 +205,31 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
             Urlaubszeiträume
           </h3>
 
-          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-4">
+          <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
             <input
               type="date"
               value={newVacationStart}
               onChange={(e) => setNewVacationStart(e.target.value)}
               placeholder="Von"
-              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm w-full"
             />
             <input
               type="date"
               value={newVacationEnd}
               onChange={(e) => setNewVacationEnd(e.target.value)}
               placeholder="Bis"
-              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm w-full"
             />
             <input
               type="text"
               value={newVacationNote}
               onChange={(e) => setNewVacationNote(e.target.value)}
               placeholder="Notiz (optional)"
-              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm w-full"
             />
             <button
               onClick={handleAddVacation}
-              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700"
+              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 w-full sm:w-auto"
             >
               Hinzufügen
             </button>
@@ -237,7 +237,7 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
 
           <div className="space-y-2">
             {vacations.map((vacation) => (
-              <div key={vacation.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+              <div key={vacation.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-md space-y-2 sm:space-y-0">
                 <div>
                   <span className="font-medium">
                     {format(new Date(vacation.start_date), 'dd.MM.yyyy', { locale: de })} -
@@ -266,24 +266,24 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
             F-Tage (Nicht verfügbar)
           </h3>
 
-          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
             <input
               type="date"
               value={newUnavailableDate}
               onChange={(e) => setNewUnavailableDate(e.target.value)}
               placeholder="Datum"
-              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm w-full"
             />
             <input
               type="text"
               value={newUnavailableReason}
               onChange={(e) => setNewUnavailableReason(e.target.value)}
               placeholder="Grund (optional)"
-              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm w-full"
             />
             <button
               onClick={handleAddUnavailableDay}
-              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700"
+              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 w-full sm:w-auto"
             >
               Hinzufügen
             </button>
@@ -291,7 +291,7 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
 
           <div className="space-y-2">
             {unavailableDays.map((day) => (
-              <div key={day.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+              <div key={day.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-md space-y-2 sm:space-y-0">
                 <div>
                   <span className="font-medium">
                     {format(new Date(day.date), 'dd.MM.yyyy', { locale: de })}

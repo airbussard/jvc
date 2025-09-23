@@ -227,13 +227,13 @@ export default function AvailabilityView() {
   return (
     <div className="bg-white rounded-lg shadow">
       <div className="p-4 border-b border-gray-200">
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-medium text-gray-900">Verfügbarkeitskalender</h2>
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col space-y-3">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+            <h2 className="text-lg font-medium text-gray-900">Verfügbarkeitskalender</h2>
             <select
               value={selectedUser}
               onChange={(e) => setSelectedUser(e.target.value)}
-              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm w-full sm:w-auto"
             >
               <option value="all">Alle Personen</option>
               {users.map(user => (
@@ -242,71 +242,110 @@ export default function AvailabilityView() {
                 </option>
               ))}
             </select>
-            <div className="flex items-center space-x-2 text-xs">
-              <span className="flex items-center">
-                <span className="w-3 h-3 bg-blue-500 rounded mr-1"></span>
-                Termine
-              </span>
-              <span className="flex items-center">
-                <span className="w-3 h-3 bg-orange-500 rounded mr-1"></span>
-                Urlaub
-              </span>
-              <span className="flex items-center">
-                <span className="w-3 h-3 bg-red-500 rounded mr-1"></span>
-                F-Tag
-              </span>
-            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs sm:text-sm">
+            <span className="flex items-center">
+              <span className="w-3 h-3 bg-blue-500 rounded mr-1"></span>
+              Termine
+            </span>
+            <span className="flex items-center">
+              <span className="w-3 h-3 bg-orange-500 rounded mr-1"></span>
+              Urlaub
+            </span>
+            <span className="flex items-center">
+              <span className="w-3 h-3 bg-red-500 rounded mr-1"></span>
+              F-Tag
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="flex">
+      <div className="flex flex-col lg:flex-row">
         <div className="flex-1">
-          <div style={{ height: '600px' }} className="p-4">
-            {loading ? (
-              <div className="flex justify-center items-center h-full">
-                <div className="text-gray-500">Lade Verfügbarkeiten...</div>
-              </div>
-            ) : (
-              <Calendar
-                localizer={localizer}
-                events={events}
-                startAccessor="start"
-                endAccessor="end"
-                view={view}
-                onView={(newView) => setView(newView)}
-                date={date}
-                onNavigate={(newDate) => setDate(newDate)}
-                onSelectEvent={handleSelectEvent}
-                eventPropGetter={eventStyleGetter}
-                components={{
-                  event: EventComponent
-                }}
-                messages={{
-                  today: 'Heute',
-                  previous: 'Zurück',
-                  next: 'Weiter',
-                  month: 'Monat',
-                  week: 'Woche',
-                  day: 'Tag',
-                  agenda: 'Agenda',
-                  date: 'Datum',
-                  time: 'Zeit',
-                  event: 'Eintrag',
-                  noEventsInRange: 'Keine Einträge in diesem Zeitraum',
-                }}
-              />
-            )}
+          <div className="p-2 sm:p-4 overflow-x-auto">
+            <div style={{ height: '400px' }} className="sm:hidden">
+              {loading ? (
+                <div className="flex justify-center items-center h-full">
+                  <div className="text-gray-500">Lade Verfügbarkeiten...</div>
+                </div>
+              ) : (
+                <Calendar
+                  localizer={localizer}
+                  events={events}
+                  startAccessor="start"
+                  endAccessor="end"
+                  view={view === 'agenda' || view === 'month' ? view : 'month'}
+                  onView={(newView) => setView(newView)}
+                  date={date}
+                  onNavigate={(newDate) => setDate(newDate)}
+                  onSelectEvent={handleSelectEvent}
+                  eventPropGetter={eventStyleGetter}
+                  components={{
+                    event: EventComponent
+                  }}
+                  views={['month', 'agenda']}
+                  messages={{
+                    today: 'Heute',
+                    previous: '←',
+                    next: '→',
+                    month: 'Monat',
+                    week: 'Woche',
+                    day: 'Tag',
+                    agenda: 'Liste',
+                    date: 'Datum',
+                    time: 'Zeit',
+                    event: 'Eintrag',
+                    noEventsInRange: 'Keine Einträge',
+                  }}
+                />
+              )}
+            </div>
+            <div style={{ height: '600px' }} className="hidden sm:block">
+              {loading ? (
+                <div className="flex justify-center items-center h-full">
+                  <div className="text-gray-500">Lade Verfügbarkeiten...</div>
+                </div>
+              ) : (
+                <Calendar
+                  localizer={localizer}
+                  events={events}
+                  startAccessor="start"
+                  endAccessor="end"
+                  view={view}
+                  onView={(newView) => setView(newView)}
+                  date={date}
+                  onNavigate={(newDate) => setDate(newDate)}
+                  onSelectEvent={handleSelectEvent}
+                  eventPropGetter={eventStyleGetter}
+                  components={{
+                    event: EventComponent
+                  }}
+                  messages={{
+                    today: 'Heute',
+                    previous: 'Zurück',
+                    next: 'Weiter',
+                    month: 'Monat',
+                    week: 'Woche',
+                    day: 'Tag',
+                    agenda: 'Agenda',
+                    date: 'Datum',
+                    time: 'Zeit',
+                    event: 'Eintrag',
+                    noEventsInRange: 'Keine Einträge in diesem Zeitraum',
+                  }}
+                />
+              )}
+            </div>
           </div>
         </div>
 
         {/* Availability Summary Sidebar */}
         {availabilitySummary.length > 0 && (
-          <div className="w-80 border-l border-gray-200 p-4">
+          <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-gray-200 p-4">
             <h3 className="text-sm font-medium text-gray-900 mb-3">
               Abwesenheiten im {view === 'month' ? 'Monat' : view === 'week' ? 'Woche' : 'Tag'}
             </h3>
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
               {availabilitySummary.map((summary, idx) => (
                 <div key={idx} className="bg-gray-50 rounded p-2 text-sm">
                   <div className="font-medium text-gray-900">{summary.name}</div>
