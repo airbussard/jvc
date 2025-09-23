@@ -7,7 +7,7 @@ import 'moment/locale/de'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { createClient } from '@/lib/supabase'
 import type { Database } from '@/types/database'
-import EventModal from '@/components/EventModal'
+import EventModalExtended from '@/components/EventModalExtended'
 import ExportDialog from '@/components/ExportDialog'
 
 moment.locale('de')
@@ -24,7 +24,9 @@ interface CustomEvent extends CalendarEvent {
   id: string
   description?: string | null
   location?: string | null
+  color?: string | null
   created_by?: string | null
+  hasMyAttendance?: boolean
 }
 
 export default function CalendarView({ userRole }: CalendarViewProps) {
@@ -40,12 +42,22 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
   const canEditEvents = userRole === 'admin' || userRole === 'moderator'
 
   const loadEvents = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+
     const { data, error } = await supabase
       .from('events')
       .select('*')
       .order('start_datetime', { ascending: true })
 
-    if (!error && data) {
+    if (!error && data && user) {
+      // Get user's attendances
+      const { data: attendances } = await supabase
+        .from('event_attendances')
+        .select('event_id')
+        .eq('user_id', user.id)
+
+      const attendedEventIds = attendances?.map((a: any) => a.event_id) || []
+
       const formattedEvents: CustomEvent[] = data.map((event: Event) => ({
         id: event.id,
         title: event.title,
@@ -53,7 +65,9 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
         end: new Date(event.end_datetime),
         description: event.description,
         location: event.location,
+        color: event.color,
         created_by: event.created_by,
+        hasMyAttendance: attendedEventIds.includes(event.id)
       }))
       setEvents(formattedEvents)
     }
@@ -83,15 +97,25 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
 
   const eventStyleGetter = (event: CustomEvent) => {
     const style = {
-      backgroundColor: '#3b82f6',
+      backgroundColor: event.color || '#3b82f6',
       borderRadius: '5px',
-      opacity: 0.8,
+      opacity: 0.9,
       color: 'white',
-      border: '0px',
+      border: event.hasMyAttendance ? '2px solid #10b981' : '0px',
       display: 'block',
+      boxShadow: event.hasMyAttendance ? '0 0 0 1px #10b981' : 'none'
     }
     return { style }
   }
+
+  const EventComponent = ({ event }: { event: CustomEvent }) => (
+    <div className="flex items-center justify-between">
+      <span className="truncate">{event.title}</span>
+      {event.hasMyAttendance && (
+        <span className="ml-1 text-xs">✓</span>
+      )}
+    </div>
+  )
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -162,7 +186,7 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
       </div>
 
       {showEventModal && (
-        <EventModal
+        <EventModalExtended
           event={selectedEvent}
           canEdit={canEditEvents}
           onClose={() => {

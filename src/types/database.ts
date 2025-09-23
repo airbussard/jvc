@@ -40,6 +40,7 @@ export type Database = {
           start_datetime: string
           end_datetime: string
           location: string | null
+          color: string | null
           created_by: string
           created_at: string
           updated_at: string
@@ -51,6 +52,7 @@ export type Database = {
           start_datetime: string
           end_datetime: string
           location?: string | null
+          color?: string | null
           created_by: string
           created_at?: string
           updated_at?: string
@@ -62,6 +64,7 @@ export type Database = {
           start_datetime?: string
           end_datetime?: string
           location?: string | null
+          color?: string | null
           created_by?: string
           created_at?: string
           updated_at?: string
@@ -116,6 +119,32 @@ export type Database = {
           created_at?: string
         }
       }
+      event_attendances: {
+        Row: {
+          id: string
+          event_id: string
+          user_id: string
+          status: 'attending_onsite' | 'attending_hybrid' | 'absent'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          user_id: string
+          status: 'attending_onsite' | 'attending_hybrid' | 'absent'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          user_id?: string
+          status?: 'attending_onsite' | 'attending_hybrid' | 'absent'
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -125,6 +154,7 @@ export type Database = {
     }
     Enums: {
       user_role: 'normal' | 'moderator' | 'admin'
+      attendance_status: 'attending_onsite' | 'attending_hybrid' | 'absent'
     }
     CompositeTypes: {
       [_ in never]: never

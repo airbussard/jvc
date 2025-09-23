@@ -132,6 +132,12 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ✅ Kalender-Features umgesetzt
 ✅ Export-Funktion erstellt (ICS-Format)
 ✅ Deployment-Setup konfiguriert
+✅ Passwort-Vergessen-Funktion
+✅ Erweiterte Termin-Features:
+   - Farbauswahl für Termine
+   - Teilnahme-Management (Vor Ort/Hybrid/Abwesend)
+   - Teilnehmerliste mit Status
+   - Visuelle Kennzeichnung eigener Teilnahmen
 
 ### Wichtige SQL-Befehle für Supabase
 Das Schema in `supabase/schema.sql` muss im Supabase SQL-Editor ausgeführt werden:
