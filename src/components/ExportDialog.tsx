@@ -39,7 +39,11 @@ export default function ExportDialog({ events, onClose }: ExportDialogProps) {
       if (event.allDay || event.is_all_day) {
         // For all-day events, use DATE instead of DATE-TIME
         eventData.start = event.start
-        eventData.end = event.end
+        // Add one day to end date for all-day events (ICS uses exclusive end)
+        // This ensures multi-day all-day events are displayed correctly
+        const endDate = new Date(event.end)
+        endDate.setDate(endDate.getDate() + 1)
+        eventData.end = endDate
         eventData.allDay = true
       } else {
         eventData.start = event.start
