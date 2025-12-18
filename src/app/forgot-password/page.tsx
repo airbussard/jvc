@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 
@@ -10,7 +9,6 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const router = useRouter()
   const supabase = createClient()
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -34,12 +32,16 @@ export default function ForgotPasswordPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-md">
+      <div className="flex min-h-screen items-center justify-center bg-main-gradient px-4 relative overflow-hidden">
+        {/* Dekorative Blur-Kreise */}
+        <div className="absolute top-20 left-20 w-72 h-72 bg-secondary-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-primary-400/20 rounded-full blur-3xl"></div>
+
+        <div className="glass-modal w-full max-w-md p-8 animate-glass-in">
           <div className="text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-secondary-400 to-secondary-600 shadow-lg mb-6">
               <svg
-                className="h-6 w-6 text-green-600"
+                className="h-8 w-8 text-white"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -52,26 +54,25 @@ export default function ForgotPasswordPage() {
                 />
               </svg>
             </div>
-            <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
+            <h2 className="text-2xl font-bold text-primary-900">
               E-Mail versendet
             </h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-3 text-gray-600">
               Wir haben dir eine E-Mail mit einem Link zum Zurücksetzen deines Passworts gesendet.
-              Bitte überprüfe dein Postfach.
             </p>
-            <p className="mt-4 text-xs text-gray-500">
-              Die E-Mail wurde an <strong>{email}</strong> gesendet
+            <p className="mt-4 text-sm text-gray-500">
+              Die E-Mail wurde an <strong className="text-primary-700">{email}</strong> gesendet
             </p>
-            <div className="mt-6 space-y-2">
+            <div className="mt-8 space-y-3">
               <Link
                 href="/login"
-                className="block w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                className="glass-button-primary block w-full text-center"
               >
                 Zurück zur Anmeldung
               </Link>
               <button
                 onClick={() => setSuccess(false)}
-                className="block w-full text-sm text-primary-600 hover:text-primary-500"
+                className="block w-full text-sm text-primary-600 hover:text-primary-700 transition-colors"
               >
                 E-Mail erneut senden
               </button>
@@ -83,19 +84,39 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-6 sm:p-8 shadow-md">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+    <div className="flex min-h-screen items-center justify-center bg-main-gradient px-4 py-8 relative overflow-hidden">
+      {/* Dekorative Blur-Kreise */}
+      <div className="absolute top-20 left-20 w-72 h-72 bg-secondary-500/20 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-primary-400/20 rounded-full blur-3xl"></div>
+
+      <div className="glass-modal w-full max-w-md p-8 animate-glass-in">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 shadow-lg mb-4">
+            <svg
+              className="h-8 w-8 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-primary-900">
             Passwort zurücksetzen
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen deines Passworts.
+          <p className="mt-2 text-gray-600">
+            Gib deine E-Mail-Adresse ein und wir senden dir einen Link.
           </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleResetPassword}>
+
+        <form onSubmit={handleResetPassword} className="space-y-5">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
               E-Mail-Adresse
             </label>
             <input
@@ -106,31 +127,29 @@ export default function ForgotPasswordPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500"
+              className="glass-input-solid w-full"
               placeholder="deine-email@beispiel.de"
             />
           </div>
 
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
+            <div className="p-4 rounded-xl bg-red-50 border border-red-200">
+              <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex w-full justify-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:opacity-50"
-            >
-              {loading ? 'Sende E-Mail...' : 'Link zum Zurücksetzen senden'}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="glass-button-primary w-full"
+          >
+            {loading ? 'Sende E-Mail...' : 'Link zum Zurücksetzen senden'}
+          </button>
 
-          <div className="text-center">
+          <div className="text-center pt-2">
             <Link
               href="/login"
-              className="text-sm text-gray-600 hover:text-gray-500"
+              className="text-sm text-gray-600 hover:text-gray-700 transition-colors"
             >
               Zurück zur Anmeldung
             </Link>

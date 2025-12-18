@@ -16,13 +16,13 @@ interface EventModalProps {
 }
 
 const colorOptions = [
+  { value: '#1e5a8f', label: 'Dunkelblau', class: 'bg-primary-500' },
+  { value: '#10b981', label: 'Grün', class: 'bg-secondary-500' },
   { value: '#3b82f6', label: 'Blau', class: 'bg-blue-500' },
-  { value: '#10b981', label: 'Grün', class: 'bg-green-500' },
   { value: '#f59e0b', label: 'Orange', class: 'bg-amber-500' },
   { value: '#ef4444', label: 'Rot', class: 'bg-red-500' },
   { value: '#8b5cf6', label: 'Lila', class: 'bg-purple-500' },
   { value: '#ec4899', label: 'Pink', class: 'bg-pink-500' },
-  { value: '#6b7280', label: 'Grau', class: 'bg-gray-500' },
   { value: '#14b8a6', label: 'Türkis', class: 'bg-teal-500' },
 ]
 
@@ -30,7 +30,7 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
   const [title, setTitle] = useState(event?.title || '')
   const [description, setDescription] = useState(event?.description || '')
   const [location, setLocation] = useState(event?.location || '')
-  const [color, setColor] = useState(event?.color || '#3b82f6')
+  const [color, setColor] = useState(event?.color || '#1e5a8f')
   const [isAllDay, setIsAllDay] = useState(event?.is_all_day || false)
   const [startDate, setStartDate] = useState('')
   const [startTime, setStartTime] = useState('')
@@ -52,16 +52,14 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
       setStartTime(format(start, 'HH:mm'))
       setEndDate(format(end, 'yyyy-MM-dd'))
       setEndTime(format(end, 'HH:mm'))
-      setColor(event.color || '#3b82f6')
+      setColor(event.color || '#1e5a8f')
       setIsAllDay(event.is_all_day || false)
 
-      // Load attendances if event exists
       if (event.id) {
         loadAttendances()
       }
     }
 
-    // Get current user
     getCurrentUser()
   }, [event])
 
@@ -70,7 +68,6 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
     setCurrentUser(user)
 
     if (user && event?.id) {
-      // Check if user has attendance
       const { data } = await supabase
         .from('event_attendances')
         .select('status')
@@ -204,265 +201,276 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-end sm:items-center justify-center sm:px-4 sm:pt-4 sm:pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose} />
+    <div className="fixed inset-0 z-50 overflow-y-auto flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="glass-overlay" onClick={onClose} />
 
-        <div className="inline-block align-bottom bg-white rounded-t-lg sm:rounded-lg w-full sm:max-w-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:w-full sm:p-6">
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <h3 className="text-lg font-medium text-gray-900">
-                {event?.id ? 'Termin bearbeiten' : 'Neuer Termin'}
-              </h3>
+      <div className="glass-modal w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 animate-glass-in max-h-[90vh] overflow-y-auto">
+        <form onSubmit={handleSubmit}>
+          {/* Header */}
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold text-primary-900">
+              {event?.id ? 'Termin bearbeiten' : 'Neuer Termin'}
+            </h3>
+          </div>
+
+          {error && (
+            <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Titel *</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                disabled={!canEdit}
+                className="glass-input-solid w-full"
+                placeholder="Termintitel eingeben"
+              />
             </div>
 
-            {error && (
-              <div className="mb-4 rounded-md bg-red-50 p-4">
-                <p className="text-sm text-red-800">{error}</p>
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Beschreibung</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                disabled={!canEdit}
+                className="glass-input-solid w-full"
+                placeholder="Optionale Beschreibung"
+              />
+            </div>
+
+            {/* Location */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Ort</label>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                disabled={!canEdit}
+                className="glass-input-solid w-full"
+                placeholder="Veranstaltungsort"
+              />
+            </div>
+
+            {/* All Day Checkbox */}
+            {canEdit && (
+              <div>
+                <label className="flex items-center space-x-3 text-sm font-medium text-gray-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isAllDay}
+                    onChange={(e) => setIsAllDay(e.target.checked)}
+                    disabled={!canEdit}
+                    className="w-5 h-5 rounded-lg border-gray-300 text-primary-600 focus:ring-primary-500"
+                  />
+                  <span>Ganztägiger Termin</span>
+                </label>
               </div>
             )}
 
-            <div className="space-y-3 sm:space-y-4">
+            {/* Color Selection */}
+            {canEdit && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">Titel *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Farbe</label>
+                <div className="flex flex-wrap gap-3">
+                  {colorOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setColor(option.value)}
+                      className={`w-10 h-10 rounded-xl transition-all duration-200 ${option.class} ${
+                        color === option.value
+                          ? 'ring-2 ring-offset-2 ring-primary-500 scale-110 shadow-lg'
+                          : 'hover:scale-105 shadow-md'
+                      }`}
+                      title={option.label}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Date/Time */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Startdatum *
+                </label>
                 <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
                   required
                   disabled={!canEdit}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm sm:text-sm"
+                  className="glass-input-solid w-full"
                 />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Beschreibung</label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
-                  disabled={!canEdit}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Ort</label>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  disabled={!canEdit}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                />
-              </div>
-
-              {canEdit && (
+              {!isAllDay && (
                 <div>
-                  <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={isAllDay}
-                      onChange={(e) => setIsAllDay(e.target.checked)}
-                      disabled={!canEdit}
-                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span>Ganztägiger Termin</span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Startzeit *</label>
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    required
+                    disabled={!canEdit}
+                    className="glass-input-solid w-full"
+                  />
                 </div>
               )}
+            </div>
 
-              {canEdit && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Enddatum *
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  required
+                  disabled={!canEdit}
+                  className="glass-input-solid w-full"
+                />
+              </div>
+              {!isAllDay && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Farbe</label>
-                  <div className="flex space-x-2">
-                    {colorOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => setColor(option.value)}
-                        className={`w-8 h-8 rounded-full ${option.class} ${
-                          color === option.value ? 'ring-2 ring-offset-2 ring-gray-400' : ''
-                        }`}
-                        title={option.label}
-                      />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Endzeit *</label>
+                  <input
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    required
+                    disabled={!canEdit}
+                    className="glass-input-solid w-full"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Attendance Section */}
+          {event?.id && (
+            <div className="border-t border-gray-100 mt-6 pt-6">
+              <label className="block text-sm font-medium text-gray-700 mb-3">Meine Teilnahme</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleAttendanceChange('attending_onsite')}
+                  className={`px-4 py-3 text-sm rounded-xl border-2 transition-all duration-200 ${
+                    myAttendance === 'attending_onsite'
+                      ? 'bg-secondary-100 border-secondary-500 text-secondary-700 shadow-md'
+                      : 'bg-white/50 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                  }`}
+                >
+                  Vor Ort
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAttendanceChange('attending_hybrid')}
+                  className={`px-4 py-3 text-sm rounded-xl border-2 transition-all duration-200 ${
+                    myAttendance === 'attending_hybrid'
+                      ? 'bg-blue-100 border-blue-500 text-blue-700 shadow-md'
+                      : 'bg-white/50 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                  }`}
+                >
+                  Hybrid
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAttendanceChange('absent')}
+                  className={`px-4 py-3 text-sm rounded-xl border-2 transition-all duration-200 ${
+                    myAttendance === 'absent'
+                      ? 'bg-red-100 border-red-500 text-red-700 shadow-md'
+                      : 'bg-white/50 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                  }`}
+                >
+                  Abwesend
+                </button>
+                {myAttendance && (
+                  <button
+                    type="button"
+                    onClick={() => handleAttendanceChange('remove')}
+                    className="px-4 py-3 text-sm rounded-xl border-2 bg-white/50 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+                  >
+                    Zurückziehen
+                  </button>
+                )}
+              </div>
+
+              {attendances.length > 0 && (
+                <div className="mt-5">
+                  <p className="text-sm font-medium text-gray-700 mb-3">Teilnehmer ({attendances.length}):</p>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {attendances.map((att: any) => (
+                      <div key={att.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+                        <span className="text-sm font-medium text-gray-900">{att.profiles?.full_name || 'Unbekannt'}</span>
+                        <span className={`px-3 py-1 rounded-lg text-xs font-medium ${
+                          att.status === 'attending_onsite' ? 'bg-secondary-100 text-secondary-700' :
+                          att.status === 'attending_hybrid' ? 'bg-blue-100 text-blue-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {att.status === 'attending_onsite' ? 'Vor Ort' :
+                           att.status === 'attending_hybrid' ? 'Hybrid' : 'Abwesend'}
+                        </span>
+                      </div>
                     ))}
                   </div>
                 </div>
               )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    {isAllDay ? 'Startdatum *' : 'Startdatum *'}
-                  </label>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    required
-                    disabled={!canEdit}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                  />
-                </div>
-                {!isAllDay && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Startzeit *</label>
-                    <input
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      required
-                      disabled={!canEdit}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    {isAllDay ? 'Enddatum *' : 'Enddatum *'}
-                  </label>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    required
-                    disabled={!canEdit}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                  />
-                </div>
-                {!isAllDay && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Endzeit *</label>
-                    <input
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      required
-                      disabled={!canEdit}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                    />
-                  </div>
-                )}
-              </div>
             </div>
+          )}
 
-            {event?.id && (
-              <div className="border-t mt-4 pt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Meine Teilnahme</label>
-                <div className="grid grid-cols-2 gap-2">
+          {/* Action Buttons */}
+          <div className="mt-6 space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-3">
+            {canEdit ? (
+              <>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="glass-button-primary w-full sm:order-2"
+                >
+                  {saving ? 'Speichern...' : 'Speichern'}
+                </button>
+                {event?.id ? (
                   <button
                     type="button"
-                    onClick={() => handleAttendanceChange('attending_onsite')}
-                    className={`px-3 py-2 text-sm rounded-md border ${
-                      myAttendance === 'attending_onsite'
-                        ? 'bg-green-100 border-green-500 text-green-700'
-                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    Vor Ort
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAttendanceChange('attending_hybrid')}
-                    className={`px-3 py-2 text-sm rounded-md border ${
-                      myAttendance === 'attending_hybrid'
-                        ? 'bg-blue-100 border-blue-500 text-blue-700'
-                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    Hybrid
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAttendanceChange('absent')}
-                    className={`px-3 py-2 text-sm rounded-md border ${
-                      myAttendance === 'absent'
-                        ? 'bg-red-100 border-red-500 text-red-700'
-                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    Abwesend
-                  </button>
-                  {myAttendance && (
-                    <button
-                      type="button"
-                      onClick={() => handleAttendanceChange('remove')}
-                      className="px-3 py-2 text-sm rounded-md border bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                    >
-                      Zurückziehen
-                    </button>
-                  )}
-                </div>
-
-                {attendances.length > 0 && (
-                  <div className="mt-4">
-                    <p className="text-sm text-gray-600 mb-2">Teilnehmer ({attendances.length}):</p>
-                    <div className="space-y-1 max-h-32 overflow-y-auto">
-                      {attendances.map((att: any) => (
-                        <div key={att.id} className="flex items-center justify-between text-sm">
-                          <span>{att.profiles?.full_name || 'Unbekannt'}</span>
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            att.status === 'attending_onsite' ? 'bg-green-100 text-green-700' :
-                            att.status === 'attending_hybrid' ? 'bg-blue-100 text-blue-700' :
-                            'bg-red-100 text-red-700'
-                          }`}>
-                            {att.status === 'attending_onsite' ? 'Vor Ort' :
-                             att.status === 'attending_hybrid' ? 'Hybrid' : 'Abwesend'}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="mt-5 sm:mt-6 space-y-2 sm:space-y-0 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-              {canEdit ? (
-                <>
-                  <button
-                    type="submit"
+                    onClick={handleDelete}
                     disabled={saving}
-                    className="inline-flex w-full justify-center rounded-md border border-transparent bg-primary-600 px-4 py-3 sm:py-2 text-base font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:col-start-2 sm:text-sm"
+                    className="glass-button-danger w-full sm:order-1"
                   >
-                    {saving ? 'Speichern...' : 'Speichern'}
+                    Löschen
                   </button>
-                  {event?.id && (
-                    <button
-                      type="button"
-                      onClick={handleDelete}
-                      disabled={saving}
-                      className="inline-flex w-full justify-center rounded-md border border-red-300 bg-white px-4 py-3 sm:py-2 text-base font-medium text-red-700 shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:col-start-1 sm:row-start-1 sm:text-sm"
-                    >
-                      Löschen
-                    </button>
-                  )}
-                </>
-              ) : (
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-3 sm:py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:col-span-2 sm:text-sm"
-                >
-                  Schließen
-                </button>
-              )}
-              {canEdit && !event?.id && (
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-3 sm:py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
-                >
-                  Abbrechen
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="glass-button-outline w-full sm:order-1"
+                  >
+                    Abbrechen
+                  </button>
+                )}
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={onClose}
+                className="glass-button-outline w-full col-span-2"
+              >
+                Schließen
+              </button>
+            )}
+          </div>
+        </form>
       </div>
     </div>
   )

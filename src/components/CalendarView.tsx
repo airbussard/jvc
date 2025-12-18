@@ -52,7 +52,6 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
       .order('start_datetime', { ascending: true })
 
     if (!error && data && user) {
-      // Get user's attendances
       const { data: attendances } = await supabase
         .from('event_attendances')
         .select('event_id')
@@ -100,13 +99,15 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
 
   const eventStyleGetter = (event: CustomEvent) => {
     const style = {
-      backgroundColor: event.color || '#3b82f6',
-      borderRadius: '5px',
-      opacity: 0.9,
+      backgroundColor: event.color || '#1e5a8f',
+      borderRadius: '8px',
+      opacity: 0.95,
       color: 'white',
       border: event.hasMyAttendance ? '2px solid #10b981' : '0px',
       display: 'block',
-      boxShadow: event.hasMyAttendance ? '0 0 0 1px #10b981' : 'none'
+      boxShadow: event.hasMyAttendance
+        ? '0 0 0 2px rgba(16, 185, 129, 0.3), 0 4px 12px rgba(0,0,0,0.15)'
+        : '0 2px 8px rgba(0,0,0,0.1)'
     }
     return { style }
   }
@@ -121,14 +122,15 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
   )
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
-          <h2 className="text-lg font-medium text-gray-900">Terminkalender</h2>
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+    <div className="glass-card-solid overflow-hidden">
+      {/* Header */}
+      <div className="section-header">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
+          <h2 className="text-xl font-semibold text-primary-900">Terminkalender</h2>
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
             <button
               onClick={() => setShowExportDialog(true)}
-              className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 w-full sm:w-auto"
+              className="glass-button-outline text-sm px-4 py-2"
             >
               <span className="hidden sm:inline">Kalender exportieren</span>
               <span className="sm:hidden">Exportieren</span>
@@ -144,7 +146,7 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
                   })
                   setShowEventModal(true)
                 }}
-                className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 w-full sm:w-auto"
+                className="glass-button-secondary text-sm px-4 py-2"
               >
                 Neuer Termin
               </button>
@@ -153,7 +155,9 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
         </div>
       </div>
 
-      <div className="p-2 sm:p-4 overflow-x-auto">
+      {/* Calendar */}
+      <div className="p-4 sm:p-6">
+        {/* Mobile Calendar */}
         <div style={{ height: '400px' }} className="sm:hidden">
           {loading ? (
             <div className="flex justify-center items-center h-full">
@@ -191,40 +195,42 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
             />
           )}
         </div>
+
+        {/* Desktop Calendar */}
         <div style={{ height: '600px' }} className="hidden sm:block">
-        {loading ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="text-gray-500">Lade Termine...</div>
-          </div>
-        ) : (
-          <Calendar
-            localizer={localizer}
-            events={events}
-            startAccessor="start"
-            endAccessor="end"
-            view={view}
-            onView={(newView) => setView(newView)}
-            date={date}
-            onNavigate={(newDate) => setDate(newDate)}
-            onSelectEvent={handleSelectEvent}
-            onSelectSlot={handleSelectSlot}
-            selectable={canEditEvents}
-            eventPropGetter={eventStyleGetter}
-            messages={{
-              today: 'Heute',
-              previous: 'Zurück',
-              next: 'Weiter',
-              month: 'Monat',
-              week: 'Woche',
-              day: 'Tag',
-              agenda: 'Agenda',
-              date: 'Datum',
-              time: 'Zeit',
-              event: 'Termin',
-              noEventsInRange: 'Keine Termine in diesem Zeitraum',
-            }}
-          />
-        )}
+          {loading ? (
+            <div className="flex justify-center items-center h-full">
+              <div className="text-gray-500">Lade Termine...</div>
+            </div>
+          ) : (
+            <Calendar
+              localizer={localizer}
+              events={events}
+              startAccessor="start"
+              endAccessor="end"
+              view={view}
+              onView={(newView) => setView(newView)}
+              date={date}
+              onNavigate={(newDate) => setDate(newDate)}
+              onSelectEvent={handleSelectEvent}
+              onSelectSlot={handleSelectSlot}
+              selectable={canEditEvents}
+              eventPropGetter={eventStyleGetter}
+              messages={{
+                today: 'Heute',
+                previous: 'Zurück',
+                next: 'Weiter',
+                month: 'Monat',
+                week: 'Woche',
+                day: 'Tag',
+                agenda: 'Agenda',
+                date: 'Datum',
+                time: 'Zeit',
+                event: 'Termin',
+                noEventsInRange: 'Keine Termine in diesem Zeitraum',
+              }}
+            />
+          )}
         </div>
       </div>
 

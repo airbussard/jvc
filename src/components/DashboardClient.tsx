@@ -38,30 +38,34 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
   const availableTabs = tabs.filter(tab => tab.available)
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Desktop Navigation */}
-      <nav className="bg-white shadow">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-secondary-50/20">
+      {/* Navigation */}
+      <nav className="glass-nav-solid sticky top-0 z-40">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 justify-between">
             <div className="flex">
               <div className="flex flex-shrink-0 items-center">
-                <h1 className="text-lg sm:text-xl font-bold text-gray-700">
-                  <span className="hidden sm:inline">jVC Terminverwaltung</span>
-                  <span className="sm:hidden">jVC</span>
-                </h1>
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary-400 to-secondary-600 flex items-center justify-center shadow-lg">
+                    <span className="text-white font-bold text-sm">jV</span>
+                  </div>
+                  <h1 className="text-lg sm:text-xl font-bold text-white">
+                    <span className="hidden sm:inline">Terminverwaltung</span>
+                    <span className="sm:hidden">jVC</span>
+                  </h1>
+                </div>
               </div>
               {/* Desktop tabs */}
-              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+              <div className="hidden sm:ml-8 sm:flex sm:space-x-2">
                 {availableTabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${
-                      activeTab === tab.id
-                        ? 'border-primary-500 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    className={`glass-tab ${
+                      activeTab === tab.id ? 'glass-tab-active' : ''
                     }`}
                   >
+                    <span className="mr-2">{tab.icon}</span>
                     {tab.name}
                   </button>
                 ))}
@@ -72,7 +76,7 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
             <div className="flex items-center sm:hidden">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                className="inline-flex items-center justify-center p-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200"
               >
                 <svg
                   className="h-6 w-6"
@@ -101,18 +105,18 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
 
             {/* Desktop user info */}
             <div className="hidden sm:flex sm:items-center sm:space-x-4">
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-white/90 flex items-center">
                 <span className="hidden lg:inline">{profile.full_name || user.email}</span>
                 <span className="lg:hidden">{profile.full_name?.split(' ')[0] || user.email?.split('@')[0]}</span>
                 {profile.role !== 'normal' && (
-                  <span className="ml-2 rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-700">
+                  <span className="ml-2 glass-badge glass-badge-success">
                     {profile.role === 'admin' ? 'Admin' : 'Mod'}
                   </span>
                 )}
               </span>
               <button
                 onClick={handleLogout}
-                className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+                className="glass-button-ghost text-sm px-4 py-2"
               >
                 Abmelden
               </button>
@@ -122,8 +126,8 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="sm:hidden border-t border-gray-200">
-            <div className="pt-2 pb-3 space-y-1">
+          <div className="sm:hidden bg-primary-800/95 backdrop-blur-xl border-t border-white/10">
+            <div className="pt-2 pb-3 space-y-1 px-4">
               {availableTabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -131,31 +135,31 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
                     setActiveTab(tab.id)
                     setMobileMenuOpen(false)
                   }}
-                  className={`block w-full text-left px-4 py-2 text-base font-medium ${
+                  className={`block w-full text-left px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
                     activeTab === tab.id
-                      ? 'bg-primary-50 border-l-4 border-primary-500 text-primary-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+                      ? 'bg-white/20 text-white'
+                      : 'text-white/70 hover:bg-white/10 hover:text-white'
                   }`}
                 >
-                  <span className="mr-2">{tab.icon}</span>
+                  <span className="mr-3">{tab.icon}</span>
                   {tab.name}
                 </button>
               ))}
             </div>
-            <div className="pt-3 pb-3 border-t border-gray-200">
-              <div className="px-4 space-y-2">
-                <div className="text-sm text-gray-700">
+            <div className="pt-3 pb-4 border-t border-white/10 px-4">
+              <div className="space-y-3">
+                <div className="text-white/90">
                   <div className="font-medium">{profile.full_name || 'Unbekannt'}</div>
-                  <div className="text-xs text-gray-500">{user.email}</div>
+                  <div className="text-sm text-white/60">{user.email}</div>
                   {profile.role !== 'normal' && (
-                    <span className="inline-block mt-1 rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-700">
+                    <span className="inline-block mt-2 glass-badge glass-badge-success">
                       {profile.role === 'admin' ? 'Administrator' : 'Moderator'}
                     </span>
                   )}
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left px-3 py-2 rounded-md bg-gray-100 text-sm font-medium text-gray-700 hover:bg-gray-200"
+                  className="w-full glass-button-ghost text-sm py-2"
                 >
                   Abmelden
                 </button>
@@ -165,7 +169,7 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
         )}
       </nav>
 
-      <main className="mx-auto max-w-7xl px-4 py-4 sm:py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
         {activeTab === 'calendar' && <CalendarView userRole={profile.role} />}
         {activeTab === 'availability' && <AvailabilityView />}
         {activeTab === 'profile' && <ProfileSettings user={user} profile={profile} />}

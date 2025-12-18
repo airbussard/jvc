@@ -84,50 +84,56 @@ export default function AdminPanel() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+      {/* Invite Section */}
+      <div className="glass-card-solid overflow-hidden">
+        <div className="section-header">
+          <h3 className="text-lg font-semibold text-primary-900">
             Neuen Benutzer einladen
           </h3>
-
+        </div>
+        <div className="p-6">
           {message && (
-            <div className={`mb-4 rounded-md p-4 ${
-              message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+            <div className={`mb-5 p-4 rounded-xl ${
+              message.type === 'success'
+                ? 'bg-secondary-50 border border-secondary-200 text-secondary-700'
+                : 'bg-red-50 border border-red-200 text-red-700'
             }`}>
-              <p className="text-sm">{message.text}</p>
+              <p className="text-sm font-medium">{message.text}</p>
             </div>
           )}
 
           <form onSubmit={handleInvite} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700">E-Mail-Adresse</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">E-Mail-Adresse</label>
                 <input
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
+                  className="glass-input-solid w-full"
+                  placeholder="email@beispiel.de"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
                 <input
                   type="text"
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
+                  className="glass-input-solid w-full"
+                  placeholder="Vollständiger Name"
                 />
               </div>
 
               <div className="sm:col-span-2 lg:col-span-1">
-                <label className="block text-sm font-medium text-gray-700">Rolle</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Rolle</label>
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as Profile['role'])}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
+                  className="glass-select-solid w-full"
                 >
                   <option value="normal">Normal</option>
                   <option value="moderator">Moderator</option>
@@ -139,7 +145,7 @@ export default function AdminPanel() {
             <button
               type="submit"
               disabled={inviting}
-              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 w-full sm:w-auto"
+              className="glass-button-primary w-full sm:w-auto"
             >
               {inviting ? 'Sende Einladung...' : 'Einladung senden'}
             </button>
@@ -147,34 +153,36 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+      {/* Users List */}
+      <div className="glass-card-solid overflow-hidden">
+        <div className="section-header">
+          <h3 className="text-lg font-semibold text-primary-900">
             Benutzerverwaltung
           </h3>
-
+        </div>
+        <div className="p-6">
           {loading ? (
-            <p className="text-gray-500">Lade Benutzer...</p>
+            <p className="text-gray-500 text-center py-4">Lade Benutzer...</p>
           ) : (
             <>
               {/* Mobile view: Cards */}
               <div className="sm:hidden space-y-4">
                 {users.map((user) => (
-                  <div key={user.id} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                  <div key={user.id} className="p-4 rounded-xl bg-gray-50/50 border border-gray-100 space-y-3">
                     <div>
-                      <span className="text-xs text-gray-500 uppercase">Name</span>
+                      <span className="text-xs text-gray-500 uppercase font-medium">Name</span>
                       <p className="font-medium text-gray-900">{user.full_name || '-'}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500 uppercase">E-Mail</span>
+                      <span className="text-xs text-gray-500 uppercase font-medium">E-Mail</span>
                       <p className="text-sm text-gray-600 break-all">{user.id}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500 uppercase block mb-1">Rolle</span>
+                      <span className="text-xs text-gray-500 uppercase font-medium block mb-2">Rolle</span>
                       <select
                         value={user.role}
                         onChange={(e) => handleRoleChange(user.id, e.target.value as Profile['role'])}
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
+                        className="glass-select-solid w-full text-sm"
                       >
                         <option value="normal">Normal</option>
                         <option value="moderator">Moderator</option>
@@ -182,7 +190,7 @@ export default function AdminPanel() {
                       </select>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500 uppercase">Erstellt am</span>
+                      <span className="text-xs text-gray-500 uppercase font-medium">Erstellt am</span>
                       <p className="text-sm text-gray-600">
                         {new Date(user.created_at).toLocaleDateString('de-DE')}
                       </p>
@@ -192,45 +200,45 @@ export default function AdminPanel() {
               </div>
 
               {/* Desktop view: Table */}
-              <div className="hidden sm:block overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+              <div className="hidden sm:block overflow-x-auto rounded-xl border border-gray-100">
+                <table className="min-w-full">
+                  <thead className="bg-gray-50/80">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Name
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         E-Mail
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Rolle
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Erstellt am
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-100">
                     {users.map((user) => (
-                      <tr key={user.id}>
+                      <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {user.full_name || '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {user.id}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
                           <select
                             value={user.role}
                             onChange={(e) => handleRoleChange(user.id, e.target.value as Profile['role'])}
-                            className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
+                            className="glass-select-solid text-sm py-2"
                           >
                             <option value="normal">Normal</option>
                             <option value="moderator">Moderator</option>
                             <option value="admin">Administrator</option>
                           </select>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {new Date(user.created_at).toLocaleDateString('de-DE')}
                         </td>
                       </tr>

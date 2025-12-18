@@ -1,3 +1,319 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Glassmorphism Card */
+  .glass-card {
+    @apply bg-white/15 backdrop-blur-xl rounded-2xl border border-white/20 shadow-glass;
+  }
+
+  .glass-card-solid {
+    @apply bg-white/90 backdrop-blur-xl rounded-2xl border border-white/30 shadow-glass;
+  }
+
+  .glass-card-dark {
+    @apply bg-black/15 backdrop-blur-xl rounded-2xl border border-white/10 shadow-glass;
+  }
+
+  /* Glassmorphism Input */
+  .glass-input {
+    @apply bg-white/10 backdrop-blur-md rounded-xl border border-white/20
+           px-4 py-3 text-white placeholder-white/50
+           focus:outline-none focus:ring-2 focus:ring-secondary-500/50 focus:border-secondary-500/50
+           transition-all duration-200;
+  }
+
+  .glass-input-solid {
+    @apply bg-white/90 backdrop-blur-md rounded-xl border border-gray-200
+           px-4 py-3 text-gray-900 placeholder-gray-400
+           focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50
+           transition-all duration-200;
+  }
+
+  /* Glassmorphism Button - Primary */
+  .glass-button-primary {
+    @apply bg-primary-600 backdrop-blur-sm text-white font-medium
+           px-6 py-3 rounded-xl border border-primary-500/30
+           hover:bg-primary-500 hover:shadow-glow-primary
+           focus:outline-none focus:ring-2 focus:ring-primary-400/50
+           transition-all duration-200 ease-out
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Glassmorphism Button - Secondary */
+  .glass-button-secondary {
+    @apply bg-secondary-600 backdrop-blur-sm text-white font-medium
+           px-6 py-3 rounded-xl border border-secondary-500/30
+           hover:bg-secondary-500 hover:shadow-glow
+           focus:outline-none focus:ring-2 focus:ring-secondary-400/50
+           transition-all duration-200 ease-out
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Glassmorphism Button - Ghost */
+  .glass-button-ghost {
+    @apply bg-white/10 backdrop-blur-sm text-white font-medium
+           px-6 py-3 rounded-xl border border-white/20
+           hover:bg-white/20 hover:border-white/30
+           focus:outline-none focus:ring-2 focus:ring-white/30
+           transition-all duration-200 ease-out;
+  }
+
+  /* Glassmorphism Button - Outline (für helle Hintergründe) */
+  .glass-button-outline {
+    @apply bg-white/50 backdrop-blur-sm text-primary-700 font-medium
+           px-6 py-3 rounded-xl border border-primary-200
+           hover:bg-white/70 hover:border-primary-300
+           focus:outline-none focus:ring-2 focus:ring-primary-400/50
+           transition-all duration-200 ease-out;
+  }
+
+  /* Glassmorphism Button - Danger */
+  .glass-button-danger {
+    @apply bg-red-500/10 backdrop-blur-sm text-red-600 font-medium
+           px-6 py-3 rounded-xl border border-red-300
+           hover:bg-red-500/20 hover:border-red-400
+           focus:outline-none focus:ring-2 focus:ring-red-400/50
+           transition-all duration-200 ease-out;
+  }
+
+  /* Glassmorphism Modal Overlay */
+  .glass-overlay {
+    @apply fixed inset-0 bg-black/40 backdrop-blur-sm z-40;
+  }
+
+  /* Glassmorphism Modal */
+  .glass-modal {
+    @apply bg-white/95 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-glass-lg relative z-50;
+  }
+
+  /* Glassmorphism Navigation */
+  .glass-nav {
+    @apply bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-glass-sm;
+  }
+
+  .glass-nav-solid {
+    @apply bg-primary-900/95 backdrop-blur-xl border-b border-primary-800/50 shadow-glass-sm;
+  }
+
+  /* Glassmorphism Tab */
+  .glass-tab {
+    @apply px-4 py-2 rounded-xl text-white/70 font-medium
+           hover:bg-white/10 hover:text-white
+           transition-all duration-200;
+  }
+
+  .glass-tab-active {
+    @apply bg-white/20 text-white;
+  }
+
+  /* Glassmorphism Badge */
+  .glass-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+           bg-white/20 backdrop-blur-sm border border-white/20 text-white;
+  }
+
+  .glass-badge-success {
+    @apply bg-secondary-500/20 border-secondary-400/30 text-secondary-300;
+  }
+
+  .glass-badge-warning {
+    @apply bg-amber-500/20 border-amber-400/30 text-amber-300;
+  }
+
+  .glass-badge-error {
+    @apply bg-red-500/20 border-red-400/30 text-red-300;
+  }
+
+  /* Glassmorphism Select */
+  .glass-select {
+    @apply bg-white/10 backdrop-blur-md rounded-xl border border-white/20
+           px-4 py-3 text-white
+           focus:outline-none focus:ring-2 focus:ring-secondary-500/50
+           transition-all duration-200;
+  }
+
+  .glass-select-solid {
+    @apply bg-white/90 backdrop-blur-md rounded-xl border border-gray-200
+           px-4 py-3 text-gray-900
+           focus:outline-none focus:ring-2 focus:ring-primary-500/50
+           transition-all duration-200;
+  }
+
+  /* Section Header mit Gradient */
+  .section-header {
+    @apply px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-primary-50/50 to-secondary-50/30;
+  }
+
+  /* List Item mit Hover */
+  .glass-list-item {
+    @apply flex items-center justify-between p-4 rounded-xl bg-white/50 border border-gray-100
+           hover:bg-white/70 hover:border-gray-200 transition-all duration-200;
+  }
+}
+
+@layer utilities {
+  /* Text-Glassmorphism-Effekte */
+  .text-glass {
+    @apply text-white/90;
+  }
+
+  .text-glass-muted {
+    @apply text-white/60;
+  }
+
+  /* Animation für sanfte Übergänge */
+  .animate-glass-in {
+    animation: glassIn 0.3s ease-out forwards;
+  }
+
+  @keyframes glassIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100/50 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300/80 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400/80;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.8) rgba(243, 244, 246, 0.5);
+}
+
+/* React Big Calendar Custom Styling für Glassmorphism */
+.rbc-calendar {
+  @apply bg-transparent;
+}
+
+.rbc-toolbar {
+  @apply mb-4 flex flex-wrap gap-2;
+}
+
+.rbc-toolbar button {
+  @apply px-3 py-2 text-sm font-medium rounded-xl bg-white/50 border border-gray-200 text-gray-700
+         hover:bg-white/70 hover:border-gray-300 transition-all duration-200 !important;
+}
+
+.rbc-toolbar button.rbc-active {
+  @apply bg-primary-100 border-primary-300 text-primary-700 !important;
+}
+
+.rbc-toolbar-label {
+  @apply text-lg font-semibold text-primary-900;
+}
+
+.rbc-header {
+  @apply py-3 text-sm font-semibold text-gray-700 bg-gray-50/80 backdrop-blur-sm border-b border-gray-200/50;
+}
+
+.rbc-month-view,
+.rbc-time-view {
+  @apply bg-white/80 backdrop-blur-md rounded-2xl border border-gray-200/50 overflow-hidden shadow-glass-sm;
+}
+
+.rbc-month-row {
+  @apply border-b border-gray-100;
+}
+
+.rbc-day-bg {
+  @apply border-r border-gray-100;
+}
+
+.rbc-day-bg.rbc-today {
+  @apply bg-secondary-50/50;
+}
+
+.rbc-off-range-bg {
+  @apply bg-gray-50/50;
+}
+
+.rbc-date-cell {
+  @apply text-sm py-1 px-2;
+}
+
+.rbc-date-cell.rbc-now {
+  @apply font-bold text-secondary-600;
+}
+
+.rbc-event {
+  @apply rounded-lg shadow-sm border-0 px-2 py-1 text-sm !important;
+}
+
+.rbc-event.rbc-selected {
+  @apply ring-2 ring-secondary-400 ring-offset-2 !important;
+}
+
+.rbc-event-content {
+  @apply font-medium;
+}
+
+.rbc-show-more {
+  @apply text-primary-600 font-medium hover:text-primary-700 text-sm mt-1;
+}
+
+.rbc-agenda-view {
+  @apply bg-white/80 backdrop-blur-md rounded-2xl border border-gray-200/50 overflow-hidden;
+}
+
+.rbc-agenda-table {
+  @apply w-full;
+}
+
+.rbc-agenda-date-cell,
+.rbc-agenda-time-cell {
+  @apply py-3 px-4 text-gray-600 text-sm;
+}
+
+.rbc-agenda-event-cell {
+  @apply py-3 px-4;
+}
+
+.rbc-time-header {
+  @apply border-b border-gray-200/50;
+}
+
+.rbc-time-content {
+  @apply border-t border-gray-200/50;
+}
+
+.rbc-timeslot-group {
+  @apply border-b border-gray-100/50;
+}
+
+.rbc-time-slot {
+  @apply text-xs text-gray-500;
+}
+
+.rbc-current-time-indicator {
+  @apply bg-secondary-500;
+}

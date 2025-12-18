@@ -95,7 +95,6 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
       setNewVacationNote('')
       setMessage({ type: 'success', text: 'Urlaub erfolgreich hinzugefügt!' })
     } else {
-      console.error('Error adding vacation:', error)
       setMessage({ type: 'error', text: `Fehler beim Hinzufügen des Urlaubs: ${error.message}` })
     }
   }
@@ -133,7 +132,6 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
       setNewUnavailableReason('')
       setMessage({ type: 'success', text: 'F-Tag erfolgreich hinzugefügt!' })
     } else {
-      console.error('Error adding F-day:', error)
       setMessage({ type: 'error', text: `Fehler beim Hinzufügen des F-Tags: ${error.message}` })
     }
   }
@@ -155,43 +153,49 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
   return (
     <div className="space-y-6">
       {message && (
-        <div className={`rounded-md p-4 ${
-          message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+        <div className={`p-4 rounded-xl ${
+          message.type === 'success'
+            ? 'bg-secondary-50 border border-secondary-200 text-secondary-700'
+            : 'bg-red-50 border border-red-200 text-red-700'
         }`}>
-          <p className="text-sm">{message.text}</p>
+          <p className="text-sm font-medium">{message.text}</p>
         </div>
       )}
 
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+      {/* Personal Data */}
+      <div className="glass-card-solid overflow-hidden">
+        <div className="section-header">
+          <h3 className="text-lg font-semibold text-primary-900">
             Persönliche Daten
           </h3>
+        </div>
+        <div className="p-6">
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                className="glass-input-solid w-full"
+                placeholder="Dein vollständiger Name"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">E-Mail</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">E-Mail</label>
               <input
                 type="email"
                 value={user.email || ''}
                 disabled
-                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm sm:text-sm"
+                className="glass-input-solid w-full bg-gray-50 cursor-not-allowed"
               />
             </div>
           </div>
-          <div className="mt-4">
+          <div className="mt-5">
             <button
               onClick={handleSaveProfile}
               disabled={saving}
-              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 w-full sm:w-auto"
+              className="glass-button-primary w-full sm:w-auto"
             >
               {saving ? 'Speichern...' : 'Speichern'}
             </button>
@@ -199,115 +203,116 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+      {/* Vacations */}
+      <div className="glass-card-solid overflow-hidden">
+        <div className="section-header">
+          <h3 className="text-lg font-semibold text-primary-900">
             Urlaubszeiträume
           </h3>
-
-          <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        </div>
+        <div className="p-6">
+          <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <input
               type="date"
               value={newVacationStart}
               onChange={(e) => setNewVacationStart(e.target.value)}
-              placeholder="Von"
-              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm w-full"
+              className="glass-input-solid"
             />
             <input
               type="date"
               value={newVacationEnd}
               onChange={(e) => setNewVacationEnd(e.target.value)}
-              placeholder="Bis"
-              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm w-full"
+              className="glass-input-solid"
             />
             <input
               type="text"
               value={newVacationNote}
               onChange={(e) => setNewVacationNote(e.target.value)}
               placeholder="Notiz (optional)"
-              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm w-full"
+              className="glass-input-solid"
             />
             <button
               onClick={handleAddVacation}
-              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 w-full sm:w-auto"
+              className="glass-button-secondary text-sm px-4 py-3"
             >
               Hinzufügen
             </button>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {vacations.map((vacation) => (
-              <div key={vacation.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-md space-y-2 sm:space-y-0">
+              <div key={vacation.id} className="glass-list-item">
                 <div>
-                  <span className="font-medium">
+                  <span className="font-medium text-gray-900">
                     {format(new Date(vacation.start_date), 'dd.MM.yyyy', { locale: de })} -
                     {format(new Date(vacation.end_date), 'dd.MM.yyyy', { locale: de })}
                   </span>
-                  {vacation.note && <span className="ml-2 text-sm text-gray-600">({vacation.note})</span>}
+                  {vacation.note && <span className="ml-2 text-sm text-gray-500">({vacation.note})</span>}
                 </div>
                 <button
                   onClick={() => handleDeleteVacation(vacation.id)}
-                  className="text-red-600 hover:text-red-800 text-sm"
+                  className="text-red-500 hover:text-red-700 text-sm font-medium transition-colors"
                 >
                   Löschen
                 </button>
               </div>
             ))}
             {vacations.length === 0 && (
-              <p className="text-gray-500 text-sm">Keine Urlaubszeiträume eingetragen</p>
+              <p className="text-gray-500 text-sm py-4 text-center">Keine Urlaubszeiträume eingetragen</p>
             )}
           </div>
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+      {/* Unavailable Days */}
+      <div className="glass-card-solid overflow-hidden">
+        <div className="section-header">
+          <h3 className="text-lg font-semibold text-primary-900">
             F-Tage (Nicht verfügbar)
           </h3>
-
-          <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        </div>
+        <div className="p-6">
+          <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <input
               type="date"
               value={newUnavailableDate}
               onChange={(e) => setNewUnavailableDate(e.target.value)}
-              placeholder="Datum"
-              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm w-full"
+              className="glass-input-solid"
             />
             <input
               type="text"
               value={newUnavailableReason}
               onChange={(e) => setNewUnavailableReason(e.target.value)}
               placeholder="Grund (optional)"
-              className="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm w-full"
+              className="glass-input-solid"
             />
             <button
               onClick={handleAddUnavailableDay}
-              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 w-full sm:w-auto"
+              className="glass-button-secondary text-sm px-4 py-3"
             >
               Hinzufügen
             </button>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {unavailableDays.map((day) => (
-              <div key={day.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-md space-y-2 sm:space-y-0">
+              <div key={day.id} className="glass-list-item">
                 <div>
-                  <span className="font-medium">
+                  <span className="font-medium text-gray-900">
                     {format(new Date(day.date), 'dd.MM.yyyy', { locale: de })}
                   </span>
-                  {day.reason && <span className="ml-2 text-sm text-gray-600">({day.reason})</span>}
+                  {day.reason && <span className="ml-2 text-sm text-gray-500">({day.reason})</span>}
                 </div>
                 <button
                   onClick={() => handleDeleteUnavailableDay(day.id)}
-                  className="text-red-600 hover:text-red-800 text-sm"
+                  className="text-red-500 hover:text-red-700 text-sm font-medium transition-colors"
                 >
                   Löschen
                 </button>
               </div>
             ))}
             {unavailableDays.length === 0 && (
-              <p className="text-gray-500 text-sm">Keine F-Tage eingetragen</p>
+              <p className="text-gray-500 text-sm py-4 text-center">Keine F-Tage eingetragen</p>
             )}
           </div>
         </div>
