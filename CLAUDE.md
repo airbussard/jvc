@@ -275,15 +275,114 @@ jvc/
 - **Tablet**: Optimierte Button-Layouts
 - **Desktop**: Volle Funktionalität mit Seitenleisten
 
-#### Farbschema
-- **Header**: Anthrazit-grau (#374151)
-- **Primärfarbe**: Blau (#3b82f6)
-- **Urlaub**: Rot (#ef4444)
-- **F-Tag**: Orange (#f97316)
-- **Eigene Teilnahme**: Grüner Rahmen (#10b981)
-
 #### Besondere Features
 - Termine mit eigener Teilnahme haben visuellen Indikator
 - Anzahl der zu exportierenden Termine wird live angezeigt
 - Agenda-Ansicht scrollt automatisch zu aktuellem Datum
 - Mobile Ansicht nutzt kompakte Bezeichnungen
+
+---
+
+## Glassmorphism Redesign (Dezember 2023)
+
+### Neues Design-System
+Das UI wurde komplett auf ein modernes Glassmorphism-Design umgestellt.
+
+#### Farbschema (NEU)
+- **Primärfarbe**: Dunkelblau (#1e5a8f) - Header, Buttons, Links
+- **Sekundärfarbe**: Grün (#10b981) - Akzente, Erfolg, Logo-Badge
+- **Urlaub**: Orange (#f59e0b)
+- **F-Tag**: Rot (#ef4444)
+- **Eigene Teilnahme**: Grüner Ring (#10b981)
+
+#### Tailwind-Erweiterungen (`tailwind.config.ts`)
+- Neue Farbpaletten: `primary`, `secondary`, `glass`
+- Custom Shadows: `glass`, `glass-sm`, `glass-lg`, `glow`, `glow-primary`
+- Hintergrund-Gradient: `bg-main-gradient`
+
+#### CSS-Utility-Klassen (`src/app/globals.css`)
+```css
+/* Karten */
+.glass-card          /* Transparente Karte mit Blur */
+.glass-card-solid    /* Solide weiße Karte mit Blur */
+
+/* Buttons */
+.glass-button-primary    /* Dunkelblau */
+.glass-button-secondary  /* Grün */
+.glass-button-ghost      /* Transparent für dunkle Hintergründe */
+.glass-button-outline    /* Outline für helle Hintergründe */
+.glass-button-danger     /* Rot für Löschen */
+
+/* Eingaben */
+.glass-input-solid       /* Solide weiße Eingabe */
+.glass-select-solid      /* Solide weiße Select-Box */
+
+/* Navigation */
+.glass-nav-solid         /* Dunkelblauer Header */
+.glass-tab               /* Tab-Button (mit flex items-center) */
+.glass-tab-active        /* Aktiver Tab */
+
+/* Modals */
+.glass-overlay           /* Dunkler Blur-Hintergrund */
+.glass-modal             /* Weißer Modal mit Blur */
+
+/* Badges */
+.glass-badge             /* Basis-Badge */
+.glass-badge-success     /* Grüner Badge */
+
+/* Sonstiges */
+.section-header          /* Gradient-Header für Sections */
+.glass-list-item         /* Listen-Element mit Hover */
+```
+
+#### Navigation (DashboardClient.tsx)
+- **Logo**: "jVC" im grünen Badge
+- **Icons**: SVG Heroicons statt Emojis
+  - Kalender: CalendarIcon
+  - Verfügbarkeit: UsersIcon
+  - Profil: UserIcon
+  - Verwaltung: SettingsIcon (nur für Admins)
+
+#### Geänderte Komponenten
+| Komponente | Änderungen |
+|------------|------------|
+| `DashboardClient.tsx` | Dunkelblauer Header, SVG-Icons, Logo "jVC" |
+| `CalendarView.tsx` | glass-card-solid, section-header |
+| `EventModalExtended.tsx` | glass-modal, Farbauswahl mit Kreisen |
+| `ExportDialog.tsx` | glass-modal Design |
+| `ProfileSettings.tsx` | Section-Cards mit Headers |
+| `AdminPanel.tsx` | Tabelle mit Hover-Effekten |
+| `AvailabilityView.tsx` | Farbige Badges für Urlaub/F-Tag |
+| `page.tsx` (Landing) | Dekorative Blur-Kreise, Gradient |
+| `login/page.tsx` | glass-modal Design |
+| `forgot-password/page.tsx` | glass-modal Design |
+| `reset-password/page.tsx` | glass-modal Design |
+
+### Letzte Commits
+```
+14c6364 fix: Logo "jVC" und Tab-Icon-Ausrichtung korrigieren
+84811fa fix: Replace emoji icons with professional SVG icons in navigation
+a44fd0f feat: Complete Glassmorphism UI redesign with dark blue and green theme
+```
+
+---
+
+## Aktueller Stand & Offene Punkte
+
+### Status: Code ist fertig, Deployment-Problem
+
+**Problem**: Nach dem GitHub-Push sind die Änderungen auf dem Server (jvc.oscarknabe.de) nicht vollständig sichtbar:
+- Login-Seite zeigt neues Design ✅
+- Dashboard zeigt altes Design (Icons als Emojis, Logo "jV") ❌
+
+**Ursache**: CapRover Docker-Cache verwendet alte Schichten.
+
+**Lösung**:
+1. In CapRover Dashboard → App → Deployment Tab
+2. "Force Build" mit "Do not use cache" Checkbox aktivieren
+3. Build starten
+
+### Nächste Schritte (bei Fortsetzung)
+1. CapRover Force-Build ohne Cache durchführen
+2. Prüfen ob alle Änderungen sichtbar sind
+3. Optional: Weitere Design-Anpassungen nach Feedback
