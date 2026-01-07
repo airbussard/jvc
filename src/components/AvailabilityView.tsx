@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Calendar, momentLocalizer, View, Event as CalendarEvent } from 'react-big-calendar'
 import moment from 'moment'
 import 'moment/locale/de'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { createClient } from '@/lib/supabase'
+import { GlassSelect } from './GlassSelect'
 import type { Database } from '@/types/database'
 import { format } from 'date-fns'
 import { de } from 'date-fns/locale'
@@ -225,6 +226,14 @@ export default function AvailabilityView() {
 
   const availabilitySummary = getAvailabilitySummary()
 
+  const userOptions = useMemo(() => [
+    { value: 'all', label: 'Alle Personen' },
+    ...users.map(user => ({
+      value: user.profile.id,
+      label: user.profile.full_name || user.profile.id
+    }))
+  ], [users])
+
   return (
     <div className="glass-card-solid overflow-hidden">
       {/* Header */}
@@ -232,18 +241,12 @@ export default function AvailabilityView() {
         <div className="flex flex-col space-y-4">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
             <h2 className="text-xl font-semibold text-primary-900">Verfügbarkeitskalender</h2>
-            <select
+            <GlassSelect
               value={selectedUser}
-              onChange={(e) => setSelectedUser(e.target.value)}
-              className="glass-select-solid text-sm py-2 w-full sm:w-auto"
-            >
-              <option value="all">Alle Personen</option>
-              {users.map(user => (
-                <option key={user.profile.id} value={user.profile.id}>
-                  {user.profile.full_name || user.profile.id}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedUser}
+              options={userOptions}
+              className="w-full sm:w-48"
+            />
           </div>
 
           {/* Legend */}

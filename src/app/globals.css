@@ -147,6 +147,27 @@
            transition-all duration-200;
   }
 
+  /* Glassmorphism Listbox (Headless UI) */
+  .glass-listbox-button {
+    @apply relative bg-white/90 backdrop-blur-md rounded-xl border border-gray-200
+           px-4 py-3 pr-10 text-gray-900 cursor-pointer
+           hover:border-primary-300 hover:bg-white
+           focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-400
+           transition-all duration-200;
+  }
+
+  .glass-listbox-options {
+    @apply absolute z-50 mt-2 w-full max-h-60 overflow-auto
+           bg-white/95 backdrop-blur-xl rounded-xl border border-white/30
+           shadow-glass-lg py-1 origin-top
+           focus:outline-none;
+  }
+
+  .glass-listbox-option {
+    @apply relative cursor-pointer select-none px-4 py-3 pr-10
+           transition-colors duration-150;
+  }
+
   /* Section Header mit Gradient */
   .section-header {
     @apply px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-primary-50/50 to-secondary-50/30;

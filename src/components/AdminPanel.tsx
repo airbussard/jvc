@@ -2,9 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { GlassSelect } from './GlassSelect'
 import type { Database } from '@/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
+
+const roleOptions = [
+  { value: 'normal' as const, label: 'Normal' },
+  { value: 'moderator' as const, label: 'Moderator' },
+  { value: 'admin' as const, label: 'Administrator' },
+]
 
 export default function AdminPanel() {
   const [users, setUsers] = useState<Profile[]>([])
@@ -130,15 +137,11 @@ export default function AdminPanel() {
 
               <div className="sm:col-span-2 lg:col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Rolle</label>
-                <select
+                <GlassSelect
                   value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value as Profile['role'])}
-                  className="glass-select-solid w-full"
-                >
-                  <option value="normal">Normal</option>
-                  <option value="moderator">Moderator</option>
-                  <option value="admin">Administrator</option>
-                </select>
+                  onChange={(value) => setInviteRole(value)}
+                  options={roleOptions}
+                />
               </div>
             </div>
 
@@ -179,15 +182,11 @@ export default function AdminPanel() {
                     </div>
                     <div>
                       <span className="text-xs text-gray-500 uppercase font-medium block mb-2">Rolle</span>
-                      <select
+                      <GlassSelect
                         value={user.role}
-                        onChange={(e) => handleRoleChange(user.id, e.target.value as Profile['role'])}
-                        className="glass-select-solid w-full text-sm"
-                      >
-                        <option value="normal">Normal</option>
-                        <option value="moderator">Moderator</option>
-                        <option value="admin">Administrator</option>
-                      </select>
+                        onChange={(value) => handleRoleChange(user.id, value)}
+                        options={roleOptions}
+                      />
                     </div>
                     <div>
                       <span className="text-xs text-gray-500 uppercase font-medium">Erstellt am</span>
@@ -228,15 +227,12 @@ export default function AdminPanel() {
                           {user.id}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <select
+                          <GlassSelect
                             value={user.role}
-                            onChange={(e) => handleRoleChange(user.id, e.target.value as Profile['role'])}
-                            className="glass-select-solid text-sm py-2"
-                          >
-                            <option value="normal">Normal</option>
-                            <option value="moderator">Moderator</option>
-                            <option value="admin">Administrator</option>
-                          </select>
+                            onChange={(value) => handleRoleChange(user.id, value)}
+                            options={roleOptions}
+                            className="min-w-[140px]"
+                          />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {new Date(user.created_at).toLocaleDateString('de-DE')}
