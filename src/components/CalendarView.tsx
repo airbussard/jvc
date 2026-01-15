@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Calendar, momentLocalizer, View, Event as CalendarEvent } from 'react-big-calendar'
 import moment from 'moment'
 import 'moment/locale/de'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { createClient } from '@/lib/supabase'
+import { GlassSelect } from './GlassSelect'
 import type { Database } from '@/types/database'
 import EventModalExtended from '@/components/EventModalExtended'
 import ExportDialog from '@/components/ExportDialog'
@@ -15,6 +16,9 @@ const localizer = momentLocalizer(moment)
 
 type UserRole = Database['public']['Tables']['profiles']['Row']['role']
 type Event = Database['public']['Tables']['events']['Row']
+type Vacation = Database['public']['Tables']['vacations']['Row']
+type UnavailableDay = Database['public']['Tables']['unavailable_days']['Row']
+type Profile = Database['public']['Tables']['profiles']['Row']
 
 interface CalendarViewProps {
   userRole: UserRole
@@ -29,23 +33,44 @@ interface CustomEvent extends CalendarEvent {
   created_by?: string | null
   hasMyAttendance?: boolean
   is_all_day?: boolean
+  type?: 'event' | 'vacation' | 'unavailable'
+  userName?: string
 }
 
 export default function CalendarView({ userRole }: CalendarViewProps) {
   const [events, setEvents] = useState<CustomEvent[]>([])
+  const [absenceEvents, setAbsenceEvents] = useState<CustomEvent[]>([])
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [view, setView] = useState<View>('month')
   const [date, setDate] = useState(new Date())
   const [selectedEvent, setSelectedEvent] = useState<CustomEvent | null>(null)
   const [showEventModal, setShowEventModal] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  // Filter states
+  const [showAbsences, setShowAbsences] = useState(false)
+  const [showOnlyMyEvents, setShowOnlyMyEvents] = useState(false)
+  const [absenceFilter, setAbsenceFilter] = useState<string>('all')
+
   const supabase = createClient()
 
   const canEditEvents = userRole === 'admin' || userRole === 'moderator'
 
   const loadEvents = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
+    if (user) setCurrentUserId(user.id)
 
+    // Load profiles
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('full_name')
+
+    if (profilesData) setProfiles(profilesData as Profile[])
+
+    // Load events
     const { data, error } = await supabase
       .from('events')
       .select('*')
@@ -69,10 +94,60 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
         location: event.location,
         color: event.color,
         created_by: event.created_by,
-        hasMyAttendance: attendedEventIds.includes(event.id)
+        hasMyAttendance: attendedEventIds.includes(event.id),
+        type: 'event' as const
       }))
       setEvents(formattedEvents)
     }
+
+    // Load absences (vacations and unavailable days)
+    const { data: vacationsData } = await supabase
+      .from('vacations')
+      .select('*')
+      .order('start_date', { ascending: true })
+
+    const { data: unavailableDaysData } = await supabase
+      .from('unavailable_days')
+      .select('*')
+      .order('date', { ascending: true })
+
+    const absences: CustomEvent[] = []
+
+    if (vacationsData && profilesData) {
+      vacationsData.forEach((vacation: Vacation) => {
+        const profile = profilesData.find((p: any) => p.id === vacation.user_id)
+        const userName = (profile as any)?.full_name || 'Unbekannt'
+        absences.push({
+          id: `vacation-${vacation.id}`,
+          title: `${userName} - Urlaub${vacation.note ? `: ${vacation.note}` : ''}`,
+          start: new Date(vacation.start_date),
+          end: new Date(new Date(vacation.end_date).getTime() + 24 * 60 * 60 * 1000),
+          allDay: true,
+          type: 'vacation' as const,
+          userName,
+          created_by: vacation.user_id
+        })
+      })
+    }
+
+    if (unavailableDaysData && profilesData) {
+      unavailableDaysData.forEach((day: UnavailableDay) => {
+        const profile = profilesData.find((p: any) => p.id === day.user_id)
+        const userName = (profile as any)?.full_name || 'Unbekannt'
+        absences.push({
+          id: `unavailable-${day.id}`,
+          title: `${userName} - F-Tag${day.reason ? `: ${day.reason}` : ''}`,
+          start: new Date(day.date),
+          end: new Date(new Date(day.date).getTime() + 24 * 60 * 60 * 1000),
+          allDay: true,
+          type: 'unavailable' as const,
+          userName,
+          created_by: day.user_id
+        })
+      })
+    }
+
+    setAbsenceEvents(absences)
     setLoading(false)
   }, [supabase])
 
@@ -80,9 +155,42 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
     loadEvents()
   }, [loadEvents])
 
+  // User options for absence filter
+  const userOptions = useMemo(() => [
+    { value: 'all', label: 'Alle Personen' },
+    { value: 'me', label: 'Nur meine' },
+    ...profiles.map(p => ({ value: p.id, label: p.full_name || p.id }))
+  ], [profiles])
+
+  // Filter and combine events
+  const displayedEvents = useMemo(() => {
+    let filtered = events
+
+    // Filter: nur meine Termine
+    if (showOnlyMyEvents) {
+      filtered = filtered.filter(e => e.hasMyAttendance)
+    }
+
+    // Abwesenheiten hinzufügen wenn aktiviert
+    if (showAbsences) {
+      let absencesToShow = absenceEvents
+      if (absenceFilter === 'me' && currentUserId) {
+        absencesToShow = absenceEvents.filter(a => a.created_by === currentUserId)
+      } else if (absenceFilter !== 'all') {
+        absencesToShow = absenceEvents.filter(a => a.created_by === absenceFilter)
+      }
+      filtered = [...filtered, ...absencesToShow]
+    }
+
+    return filtered
+  }, [events, absenceEvents, showOnlyMyEvents, showAbsences, absenceFilter, currentUserId])
+
   const handleSelectEvent = (event: CustomEvent) => {
-    setSelectedEvent(event)
-    setShowEventModal(true)
+    // Nur Event-Modal für echte Termine öffnen
+    if (event.type === 'event' || !event.type) {
+      setSelectedEvent(event)
+      setShowEventModal(true)
+    }
   }
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
@@ -98,16 +206,31 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
   }
 
   const eventStyleGetter = (event: CustomEvent) => {
+    let backgroundColor = event.color || '#001a3f'
+    let border = event.hasMyAttendance ? '2px solid #34bcee' : '0px'
+    let boxShadow = event.hasMyAttendance
+      ? '0 0 0 2px rgba(52, 188, 238, 0.3), 0 4px 12px rgba(0,0,0,0.15)'
+      : '0 2px 8px rgba(0,0,0,0.1)'
+
+    // Abwesenheits-Styling
+    if (event.type === 'vacation') {
+      backgroundColor = '#f59e0b' // Orange
+      border = '1px solid #d97706'
+      boxShadow = '0 2px 8px rgba(245, 158, 11, 0.2)'
+    } else if (event.type === 'unavailable') {
+      backgroundColor = '#ef4444' // Rot
+      border = '1px solid #dc2626'
+      boxShadow = '0 2px 8px rgba(239, 68, 68, 0.2)'
+    }
+
     const style = {
-      backgroundColor: event.color || '#1e5a8f',
+      backgroundColor,
       borderRadius: '8px',
       opacity: 0.95,
       color: 'white',
-      border: event.hasMyAttendance ? '2px solid #10b981' : '0px',
+      border,
       display: 'block',
-      boxShadow: event.hasMyAttendance
-        ? '0 0 0 2px rgba(16, 185, 129, 0.3), 0 4px 12px rgba(0,0,0,0.15)'
-        : '0 2px 8px rgba(0,0,0,0.1)'
+      boxShadow
     }
     return { style }
   }
@@ -125,31 +248,85 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
     <div className="glass-card-solid overflow-hidden">
       {/* Header */}
       <div className="section-header">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
-          <h2 className="text-xl font-semibold text-primary-900">Terminkalender</h2>
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-            <button
-              onClick={() => setShowExportDialog(true)}
-              className="glass-button-outline text-sm px-4 py-2"
-            >
-              <span className="hidden sm:inline">Kalender exportieren</span>
-              <span className="sm:hidden">Exportieren</span>
-            </button>
-            {canEditEvents && (
+        <div className="flex flex-col space-y-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
+            <h2 className="text-xl font-semibold text-primary-900">Terminkalender</h2>
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <button
-                onClick={() => {
-                  setSelectedEvent({
-                    id: '',
-                    title: '',
-                    start: new Date(),
-                    end: new Date(),
-                  })
-                  setShowEventModal(true)
-                }}
-                className="glass-button-secondary text-sm px-4 py-2"
+                onClick={() => setShowExportDialog(true)}
+                className="glass-button-outline text-sm px-4 py-2"
               >
-                Neuer Termin
+                <span className="hidden sm:inline">Kalender exportieren</span>
+                <span className="sm:hidden">Exportieren</span>
               </button>
+              {canEditEvents && (
+                <button
+                  onClick={() => {
+                    setSelectedEvent({
+                      id: '',
+                      title: '',
+                      start: new Date(),
+                      end: new Date(),
+                    })
+                    setShowEventModal(true)
+                  }}
+                  className="glass-button-secondary text-sm px-4 py-2"
+                >
+                  Neuer Termin
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Filter Row */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showOnlyMyEvents}
+                onChange={(e) => setShowOnlyMyEvents(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span>Nur meine Termine</span>
+            </label>
+
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showAbsences}
+                  onChange={(e) => setShowAbsences(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                />
+                <span>Abwesenheiten</span>
+              </label>
+
+              {showAbsences && (
+                <GlassSelect
+                  value={absenceFilter}
+                  onChange={setAbsenceFilter}
+                  options={userOptions}
+                  className="w-40"
+                />
+              )}
+            </div>
+
+            {/* Legende */}
+            {showAbsences && (
+              <div className="flex items-center gap-4 text-xs text-gray-600">
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 bg-primary-600 rounded"></span>
+                  Termin
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 bg-amber-500 rounded"></span>
+                  Urlaub
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 bg-red-500 rounded"></span>
+                  F-Tag
+                </span>
+              </div>
             )}
           </div>
         </div>
@@ -166,7 +343,7 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
           ) : (
             <Calendar
               localizer={localizer}
-              events={events}
+              events={displayedEvents}
               startAccessor="start"
               endAccessor="end"
               view={view === 'agenda' || view === 'month' ? view : 'month'}
@@ -205,7 +382,7 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
           ) : (
             <Calendar
               localizer={localizer}
-              events={events}
+              events={displayedEvents}
               startAccessor="start"
               endAccessor="end"
               view={view}

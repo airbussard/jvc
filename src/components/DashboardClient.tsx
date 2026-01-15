@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 import CalendarView from '@/components/CalendarView'
-import AvailabilityView from '@/components/AvailabilityView'
 import ExemptionsView from '@/components/ExemptionsView'
 import AdminPanel from '@/components/AdminPanel'
 import ProfileSettings from '@/components/ProfileSettings'
@@ -22,12 +21,6 @@ interface DashboardClientProps {
 const CalendarIcon = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-  </svg>
-)
-
-const UsersIcon = () => (
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
   </svg>
 )
 
@@ -63,7 +56,6 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
 
   const tabs = [
     { id: 'calendar', name: 'Kalender', icon: CalendarIcon, available: true },
-    { id: 'availability', name: 'Verfügbarkeit', icon: UsersIcon, available: true },
     { id: 'exemptions', name: 'Freistellungen', icon: DocumentIcon, available: true },
     { id: 'profile', name: 'Profil', icon: UserIcon, available: true },
     { id: 'admin', name: 'Verwaltung', icon: SettingsIcon, available: profile.role === 'admin' },
@@ -211,7 +203,6 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
         {activeTab === 'calendar' && <CalendarView userRole={profile.role} />}
-        {activeTab === 'availability' && <AvailabilityView />}
         {activeTab === 'exemptions' && <ExemptionsView />}
         {activeTab === 'profile' && <ProfileSettings user={user} profile={profile} />}
         {activeTab === 'admin' && profile.role === 'admin' && <AdminPanel />}
