@@ -30,12 +30,6 @@ export default function HomePage() {
         </a>
       </div>
 
-      {/* Footer */}
-      <div className="absolute bottom-8 text-center">
-        <p className="text-white/40 text-sm">
-          Jugendverband Terminverwaltung
-        </p>
-      </div>
     </div>
   )
 }
