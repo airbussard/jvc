@@ -10,8 +10,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const router = useRouter()
   const supabase = createClient()
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { clientX, clientY } = e
+    const x = (clientX / window.innerWidth - 0.5) * 2
+    const y = (clientY / window.innerHeight - 0.5) * 2
+    setMousePosition({ x, y })
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,11 +40,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-main-gradient px-4 py-8 relative overflow-hidden">
-      {/* Dekorative Blur-Kreise */}
-      <div className="absolute top-20 left-20 w-72 h-72 bg-secondary-500/20 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-20 right-20 w-96 h-96 bg-primary-400/20 rounded-full blur-3xl"></div>
-      <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-secondary-400/15 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+    <div
+      className="flex min-h-screen items-center justify-center bg-main-gradient px-4 py-8 relative overflow-hidden"
+      onMouseMove={handleMouseMove}
+    >
+      {/* Dekorative Blur-Kreise mit Parallax-Effekt */}
+      <div
+        className="absolute top-20 left-20 w-72 h-72 bg-secondary-500/20 rounded-full blur-3xl transition-transform duration-300 ease-out"
+        style={{ transform: `translate(${mousePosition.x * 30}px, ${mousePosition.y * 30}px)` }}
+      ></div>
+      <div
+        className="absolute bottom-20 right-20 w-96 h-96 bg-primary-400/20 rounded-full blur-3xl transition-transform duration-300 ease-out"
+        style={{ transform: `translate(${mousePosition.x * 50}px, ${mousePosition.y * 50}px)` }}
+      ></div>
+      <div
+        className="absolute top-1/2 left-1/2 w-64 h-64 bg-secondary-400/15 rounded-full blur-3xl transition-transform duration-300 ease-out"
+        style={{ transform: `translate(calc(-50% + ${mousePosition.x * 20}px), calc(-50% + ${mousePosition.y * 20}px))` }}
+      ></div>
 
       <div className="glass-modal w-full max-w-md p-8 animate-glass-in">
         {/* Logo und Header */}
