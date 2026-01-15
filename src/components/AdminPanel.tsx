@@ -24,6 +24,8 @@ export default function AdminPanel() {
   const [inviting, setInviting] = useState(false)
   const [newAirlineName, setNewAirlineName] = useState('')
   const [addingAirline, setAddingAirline] = useState(false)
+  const [editingAirline, setEditingAirline] = useState<string | null>(null)
+  const [editAirlineName, setEditAirlineName] = useState('')
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const supabase = createClient()
 
@@ -164,6 +166,34 @@ export default function AdminPanel() {
     }
   }
 
+  const startEditAirline = (airline: Airline) => {
+    setEditingAirline(airline.id)
+    setEditAirlineName(airline.name)
+  }
+
+  const cancelEditAirline = () => {
+    setEditingAirline(null)
+    setEditAirlineName('')
+  }
+
+  const handleUpdateAirline = async (airlineId: string) => {
+    if (!editAirlineName.trim()) return
+
+    const { error } = await (supabase as any)
+      .from('airlines')
+      .update({ name: editAirlineName.trim() })
+      .eq('id', airlineId)
+
+    if (!error) {
+      loadAirlines()
+      setEditingAirline(null)
+      setEditAirlineName('')
+      setMessage({ type: 'success', text: 'Airline erfolgreich aktualisiert!' })
+    } else {
+      setMessage({ type: 'error', text: 'Fehler beim Aktualisieren der Airline' })
+    }
+  }
+
   const getAirlineName = (airlineId: string | null) => {
     if (!airlineId) return '-'
     const airline = airlines.find(a => a.id === airlineId)
@@ -217,13 +247,53 @@ export default function AdminPanel() {
                   key={airline.id}
                   className="flex items-center justify-between p-3 rounded-xl bg-gray-50/50 border border-gray-100"
                 >
-                  <span className="font-medium text-gray-900">{airline.name}</span>
-                  <button
-                    onClick={() => handleDeleteAirline(airline.id)}
-                    className="text-red-500 hover:text-red-700 text-sm font-medium transition-colors"
-                  >
-                    Löschen
-                  </button>
+                  {editingAirline === airline.id ? (
+                    <>
+                      <input
+                        type="text"
+                        value={editAirlineName}
+                        onChange={(e) => setEditAirlineName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleUpdateAirline(airline.id)
+                          if (e.key === 'Escape') cancelEditAirline()
+                        }}
+                        className="glass-input-solid flex-1 mr-3"
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleUpdateAirline(airline.id)}
+                          className="text-secondary-600 hover:text-secondary-700 text-sm font-medium transition-colors"
+                        >
+                          Speichern
+                        </button>
+                        <button
+                          onClick={cancelEditAirline}
+                          className="text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors"
+                        >
+                          Abbrechen
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-medium text-gray-900">{airline.name}</span>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => startEditAirline(airline)}
+                          className="text-primary-600 hover:text-primary-700 text-sm font-medium transition-colors"
+                        >
+                          Bearbeiten
+                        </button>
+                        <button
+                          onClick={() => handleDeleteAirline(airline.id)}
+                          className="text-red-500 hover:text-red-700 text-sm font-medium transition-colors"
+                        >
+                          Löschen
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
