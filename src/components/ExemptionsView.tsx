@@ -118,20 +118,22 @@ export default function ExemptionsView() {
     ...airlines.map(a => ({ value: a.id, label: a.name }))
   ], [airlines])
 
-  const monthOptions = useMemo(() => {
-    const options: { value: string; label: string }[] = []
-    const now = new Date()
+  const goToPreviousMonth = () => {
+    const [year, month] = selectedMonth.split('-').map(Number)
+    const newDate = new Date(year, month - 2, 1)
+    setSelectedMonth(`${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}`)
+  }
 
-    // 6 Monate zurück + aktueller Monat + 12 Monate voraus
-    for (let i = -6; i <= 12; i++) {
-      const date = new Date(now.getFullYear(), now.getMonth() + i, 1)
-      const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-      const label = format(date, 'MMMM yyyy', { locale: de })
-      options.push({ value, label })
-    }
+  const goToNextMonth = () => {
+    const [year, month] = selectedMonth.split('-').map(Number)
+    const newDate = new Date(year, month, 1)
+    setSelectedMonth(`${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}`)
+  }
 
-    return options
-  }, [])
+  const getMonthLabel = () => {
+    const [year, month] = selectedMonth.split('-').map(Number)
+    return format(new Date(year, month - 1, 1), 'MMMM yyyy', { locale: de })
+  }
 
   const filteredExemptions = useMemo(() => {
     let filtered = exemptions
@@ -202,13 +204,30 @@ export default function ExemptionsView() {
       <div className="section-header">
         <div className="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
           <h2 className="text-xl font-semibold text-primary-900">Freistellungen</h2>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <GlassSelect
-              value={selectedMonth}
-              onChange={setSelectedMonth}
-              options={monthOptions}
-              className="w-full sm:w-44"
-            />
+          <div className="flex flex-col sm:flex-row gap-3 items-center">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={goToPreviousMonth}
+                className="p-2 rounded-lg hover:bg-white/50 transition-colors"
+                aria-label="Vorheriger Monat"
+              >
+                <svg className="w-5 h-5 text-primary-700" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              </button>
+              <span className="text-primary-900 font-medium min-w-[140px] text-center">
+                {getMonthLabel()}
+              </span>
+              <button
+                onClick={goToNextMonth}
+                className="p-2 rounded-lg hover:bg-white/50 transition-colors"
+                aria-label="Nächster Monat"
+              >
+                <svg className="w-5 h-5 text-primary-700" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </button>
+            </div>
             <GlassSelect
               value={selectedAirline}
               onChange={setSelectedAirline}
