@@ -11,8 +11,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 })
   }
 
-  // Get airline_id from query params
+  // Get airline_id and month from query params
   const airlineId = request.nextUrl.searchParams.get('airline_id')
+  const month = request.nextUrl.searchParams.get('month') // Format: YYYY-MM
   if (!airlineId) {
     return NextResponse.json({ error: 'Airline ID fehlt' }, { status: 400 })
   }
@@ -47,6 +48,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'Keine Freistellungen für diese Airline' }, { status: 404 })
     }
 
+    // Parse month filter
+    let filterYear: number | null = null
+    let filterMonth: number | null = null
+    if (month) {
+      const [y, m] = month.split('-').map(Number)
+      if (y && m) {
+        filterYear = y
+        filterMonth = m
+      }
+    }
+
     // Build exemption data
     const exemptions: { name: string; eventTitle: string; date: string }[] = []
 
@@ -57,6 +69,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       if (event && profile) {
         const startDate = new Date(event.start_datetime)
         const endDate = new Date(event.end_datetime)
+
+        // Filter by month if specified
+        if (filterYear && filterMonth) {
+          const eventYear = startDate.getFullYear()
+          const eventMonth = startDate.getMonth() + 1
+          if (eventYear !== filterYear || eventMonth !== filterMonth) {
+            continue
+          }
+        }
 
         const formatDate = (d: Date) => d.toLocaleDateString('de-DE', {
           day: '2-digit',
@@ -84,12 +105,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return a.name.localeCompare(b.name)
     })
 
+    if (exemptions.length === 0) {
+      return NextResponse.json({ error: 'Keine Freistellungen für diesen Zeitraum' }, { status: 404 })
+    }
+
+    // Format month for display
+    const monthLabel = filterYear && filterMonth
+      ? new Date(filterYear, filterMonth - 1, 1).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })
+      : null
+
     // Generate PDF
     const doc = new PDFDocument({
       size: 'A4',
       margin: 50,
       info: {
-        Title: `Freistellungen - ${airline.name}`,
+        Title: `Freistellungen - ${airline.name}${monthLabel ? ` - ${monthLabel}` : ''}`,
         Author: 'jVC Terminverwaltung',
       }
     })
@@ -101,6 +131,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     doc.fontSize(20).font('Helvetica-Bold').text('jVC - Freistellungen', { align: 'center' })
     doc.moveDown(0.5)
     doc.fontSize(14).font('Helvetica').text(`Airline: ${airline.name}`, { align: 'center' })
+    if (monthLabel) {
+      doc.fontSize(12).text(`Zeitraum: ${monthLabel}`, { align: 'center' })
+    }
     doc.fontSize(10).text(`Erstellt am: ${new Date().toLocaleDateString('de-DE', {
       day: '2-digit',
       month: '2-digit',
@@ -173,7 +206,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           status: 200,
           headers: {
             'Content-Type': 'application/pdf',
-            'Content-Disposition': `attachment; filename="Freistellungen_${airline.name.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf"`,
+            'Content-Disposition': `attachment; filename="Freistellungen_${airline.name.replace(/[^a-zA-Z0-9]/g, '_')}_${month || new Date().toISOString().split('T')[0]}.pdf"`,
             'Content-Length': pdfBuffer.length.toString(),
           },
         }))

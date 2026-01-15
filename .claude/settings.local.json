@@ -13,7 +13,12 @@
       "Bash(npm run build:*)",
       "Bash(npm run dev:*)",
       "WebSearch",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(wc:*)",
+      "Bash(git fetch:*)",
+      "WebFetch(domain:vcockpit.de)",
+      "WebFetch(domain:brandfetch.com)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []

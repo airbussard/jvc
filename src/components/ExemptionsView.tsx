@@ -27,6 +27,10 @@ export default function ExemptionsView() {
   const [exemptions, setExemptions] = useState<ExemptionEntry[]>([])
   const [airlines, setAirlines] = useState<Airline[]>([])
   const [selectedAirline, setSelectedAirline] = useState<string>('all')
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  })
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
@@ -114,11 +118,41 @@ export default function ExemptionsView() {
     ...airlines.map(a => ({ value: a.id, label: a.name }))
   ], [airlines])
 
+  const monthOptions = useMemo(() => {
+    const options: { value: string; label: string }[] = []
+    const now = new Date()
+
+    // 6 Monate zurück + aktueller Monat + 12 Monate voraus
+    for (let i = -6; i <= 12; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() + i, 1)
+      const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+      const label = format(date, 'MMMM yyyy', { locale: de })
+      options.push({ value, label })
+    }
+
+    return options
+  }, [])
+
   const filteredExemptions = useMemo(() => {
-    if (selectedAirline === 'all') return exemptions
-    if (selectedAirline === 'none') return exemptions.filter(e => !e.airlineId)
-    return exemptions.filter(e => e.airlineId === selectedAirline)
-  }, [exemptions, selectedAirline])
+    let filtered = exemptions
+
+    // Filter by airline
+    if (selectedAirline === 'none') {
+      filtered = filtered.filter(e => !e.airlineId)
+    } else if (selectedAirline !== 'all') {
+      filtered = filtered.filter(e => e.airlineId === selectedAirline)
+    }
+
+    // Filter by month
+    const [year, month] = selectedMonth.split('-').map(Number)
+    filtered = filtered.filter(e => {
+      const eventYear = e.eventDate.getFullYear()
+      const eventMonth = e.eventDate.getMonth() + 1
+      return eventYear === year && eventMonth === month
+    })
+
+    return filtered
+  }, [exemptions, selectedAirline, selectedMonth])
 
   const formatEventDate = (entry: ExemptionEntry) => {
     const startDate = format(entry.eventDate, 'dd.MM.yyyy', { locale: de })
@@ -141,7 +175,7 @@ export default function ExemptionsView() {
     }
 
     try {
-      const response = await fetch(`/api/exemptions/pdf?airline_id=${selectedAirline}`)
+      const response = await fetch(`/api/exemptions/pdf?airline_id=${selectedAirline}&month=${selectedMonth}`)
       if (!response.ok) {
         throw new Error('PDF-Generierung fehlgeschlagen')
       }
@@ -170,6 +204,12 @@ export default function ExemptionsView() {
           <h2 className="text-xl font-semibold text-primary-900">Freistellungen</h2>
           <div className="flex flex-col sm:flex-row gap-3">
             <GlassSelect
+              value={selectedMonth}
+              onChange={setSelectedMonth}
+              options={monthOptions}
+              className="w-full sm:w-44"
+            />
+            <GlassSelect
               value={selectedAirline}
               onChange={setSelectedAirline}
               options={airlineOptions}
@@ -191,9 +231,7 @@ export default function ExemptionsView() {
           <p className="text-gray-500 text-center py-8">Lade Freistellungen...</p>
         ) : filteredExemptions.length === 0 ? (
           <p className="text-gray-500 text-center py-8">
-            {selectedAirline === 'all'
-              ? 'Keine Freistellungen vorhanden.'
-              : 'Keine Freistellungen für diese Airline.'}
+            Keine Freistellungen für diesen Zeitraum.
           </p>
         ) : (
           <>
