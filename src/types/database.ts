@@ -9,11 +9,29 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      airlines: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          created_at?: string
+        }
+      }
       profiles: {
         Row: {
           id: string
           role: 'normal' | 'moderator' | 'admin'
           full_name: string | null
+          airline_id: string | null
           created_at: string
           updated_at: string
         }
@@ -21,6 +39,7 @@ export type Database = {
           id: string
           role?: 'normal' | 'moderator' | 'admin'
           full_name?: string | null
+          airline_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -28,6 +47,7 @@ export type Database = {
           id?: string
           role?: 'normal' | 'moderator' | 'admin'
           full_name?: string | null
+          airline_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -42,6 +62,7 @@ export type Database = {
           location: string | null
           color: string | null
           is_all_day: boolean
+          requires_exemption: boolean
           created_by: string
           created_at: string
           updated_at: string
@@ -55,6 +76,7 @@ export type Database = {
           location?: string | null
           color?: string | null
           is_all_day?: boolean
+          requires_exemption?: boolean
           created_by: string
           created_at?: string
           updated_at?: string
@@ -68,6 +90,7 @@ export type Database = {
           location?: string | null
           color?: string | null
           is_all_day?: boolean
+          requires_exemption?: boolean
           created_by?: string
           created_at?: string
           updated_at?: string

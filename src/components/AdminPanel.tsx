@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase'
 import { GlassSelect } from './GlassSelect'
 import type { Database } from '@/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
+type Airline = Database['public']['Tables']['airlines']['Row']
 
 const roleOptions = [
   { value: 'normal' as const, label: 'Normal' },
@@ -15,17 +16,26 @@ const roleOptions = [
 
 export default function AdminPanel() {
   const [users, setUsers] = useState<Profile[]>([])
+  const [airlines, setAirlines] = useState<Airline[]>([])
   const [loading, setLoading] = useState(true)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteName, setInviteName] = useState('')
   const [inviteRole, setInviteRole] = useState<Profile['role']>('normal')
   const [inviting, setInviting] = useState(false)
+  const [newAirlineName, setNewAirlineName] = useState('')
+  const [addingAirline, setAddingAirline] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
-    loadUsers()
+    loadData()
   }, [])
+
+  const loadData = async () => {
+    setLoading(true)
+    await Promise.all([loadUsers(), loadAirlines()])
+    setLoading(false)
+  }
 
   const loadUsers = async () => {
     const { data, error } = await supabase
@@ -34,10 +44,25 @@ export default function AdminPanel() {
       .order('created_at', { ascending: false })
 
     if (!error && data) {
-      setUsers(data)
+      setUsers(data as Profile[])
     }
-    setLoading(false)
   }
+
+  const loadAirlines = async () => {
+    const { data, error } = await supabase
+      .from('airlines')
+      .select('*')
+      .order('name', { ascending: true })
+
+    if (!error && data) {
+      setAirlines(data as Airline[])
+    }
+  }
+
+  const airlineOptions = useMemo(() => [
+    { value: '', label: 'Keine Airline' },
+    ...airlines.map(a => ({ value: a.id, label: a.name }))
+  ], [airlines])
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -89,8 +114,123 @@ export default function AdminPanel() {
     }
   }
 
+  const handleAirlineChange = async (userId: string, airlineId: string) => {
+    const { error } = await (supabase as any)
+      .from('profiles')
+      .update({ airline_id: airlineId || null })
+      .eq('id', userId)
+
+    if (!error) {
+      loadUsers()
+      setMessage({ type: 'success', text: 'Airline erfolgreich zugewiesen!' })
+    } else {
+      setMessage({ type: 'error', text: 'Fehler beim Zuweisen der Airline' })
+    }
+  }
+
+  const handleAddAirline = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newAirlineName.trim()) return
+
+    setAddingAirline(true)
+    const { error } = await (supabase as any)
+      .from('airlines')
+      .insert({ name: newAirlineName.trim() })
+
+    if (!error) {
+      setNewAirlineName('')
+      loadAirlines()
+      setMessage({ type: 'success', text: 'Airline erfolgreich hinzugefügt!' })
+    } else {
+      setMessage({ type: 'error', text: 'Fehler beim Hinzufügen der Airline' })
+    }
+    setAddingAirline(false)
+  }
+
+  const handleDeleteAirline = async (airlineId: string) => {
+    if (!confirm('Möchtest du diese Airline wirklich löschen?')) return
+
+    const { error } = await (supabase as any)
+      .from('airlines')
+      .delete()
+      .eq('id', airlineId)
+
+    if (!error) {
+      loadAirlines()
+      loadUsers() // Refresh users as their airline_id might be nullified
+      setMessage({ type: 'success', text: 'Airline erfolgreich gelöscht!' })
+    } else {
+      setMessage({ type: 'error', text: 'Fehler beim Löschen der Airline' })
+    }
+  }
+
+  const getAirlineName = (airlineId: string | null) => {
+    if (!airlineId) return '-'
+    const airline = airlines.find(a => a.id === airlineId)
+    return airline?.name || '-'
+  }
+
   return (
     <div className="space-y-6">
+      {/* Message */}
+      {message && (
+        <div className={`p-4 rounded-xl ${
+          message.type === 'success'
+            ? 'bg-secondary-50 border border-secondary-200 text-secondary-700'
+            : 'bg-red-50 border border-red-200 text-red-700'
+        }`}>
+          <p className="text-sm font-medium">{message.text}</p>
+        </div>
+      )}
+
+      {/* Airlines Section */}
+      <div className="glass-card-solid overflow-hidden">
+        <div className="section-header">
+          <h3 className="text-lg font-semibold text-primary-900">
+            Airlines verwalten
+          </h3>
+        </div>
+        <div className="p-6">
+          <form onSubmit={handleAddAirline} className="flex gap-3 mb-4">
+            <input
+              type="text"
+              value={newAirlineName}
+              onChange={(e) => setNewAirlineName(e.target.value)}
+              placeholder="Airline-Name eingeben..."
+              className="glass-input-solid flex-1"
+            />
+            <button
+              type="submit"
+              disabled={addingAirline || !newAirlineName.trim()}
+              className="glass-button-primary whitespace-nowrap"
+            >
+              {addingAirline ? 'Füge hinzu...' : 'Hinzufügen'}
+            </button>
+          </form>
+
+          {airlines.length === 0 ? (
+            <p className="text-gray-500 text-center py-4">Keine Airlines vorhanden</p>
+          ) : (
+            <div className="space-y-2">
+              {airlines.map((airline) => (
+                <div
+                  key={airline.id}
+                  className="flex items-center justify-between p-3 rounded-xl bg-gray-50/50 border border-gray-100"
+                >
+                  <span className="font-medium text-gray-900">{airline.name}</span>
+                  <button
+                    onClick={() => handleDeleteAirline(airline.id)}
+                    className="text-red-500 hover:text-red-700 text-sm font-medium transition-colors"
+                  >
+                    Löschen
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Invite Section */}
       <div className="glass-card-solid overflow-hidden">
         <div className="section-header">
@@ -99,16 +239,6 @@ export default function AdminPanel() {
           </h3>
         </div>
         <div className="p-6">
-          {message && (
-            <div className={`mb-5 p-4 rounded-xl ${
-              message.type === 'success'
-                ? 'bg-secondary-50 border border-secondary-200 text-secondary-700'
-                : 'bg-red-50 border border-red-200 text-red-700'
-            }`}>
-              <p className="text-sm font-medium">{message.text}</p>
-            </div>
-          )}
-
           <form onSubmit={handleInvite} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div>
@@ -189,6 +319,14 @@ export default function AdminPanel() {
                       />
                     </div>
                     <div>
+                      <span className="text-xs text-gray-500 uppercase font-medium block mb-2">Airline</span>
+                      <GlassSelect
+                        value={user.airline_id || ''}
+                        onChange={(value) => handleAirlineChange(user.id, value)}
+                        options={airlineOptions}
+                      />
+                    </div>
+                    <div>
                       <span className="text-xs text-gray-500 uppercase font-medium">Erstellt am</span>
                       <p className="text-sm text-gray-600">
                         {new Date(user.created_at).toLocaleDateString('de-DE')}
@@ -213,6 +351,9 @@ export default function AdminPanel() {
                         Rolle
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Airline
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Erstellt am
                       </th>
                     </tr>
@@ -232,6 +373,14 @@ export default function AdminPanel() {
                             onChange={(value) => handleRoleChange(user.id, value)}
                             options={roleOptions}
                             className="min-w-[140px]"
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <GlassSelect
+                            value={user.airline_id || ''}
+                            onChange={(value) => handleAirlineChange(user.id, value)}
+                            options={airlineOptions}
+                            className="min-w-[160px]"
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">

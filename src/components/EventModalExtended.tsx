@@ -32,6 +32,7 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
   const [location, setLocation] = useState(event?.location || '')
   const [color, setColor] = useState(event?.color || '#1e5a8f')
   const [isAllDay, setIsAllDay] = useState(event?.is_all_day || false)
+  const [requiresExemption, setRequiresExemption] = useState(event?.requires_exemption || false)
   const [startDate, setStartDate] = useState('')
   const [startTime, setStartTime] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -54,6 +55,7 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
       setEndTime(format(end, 'HH:mm'))
       setColor(event.color || '#1e5a8f')
       setIsAllDay(event.is_all_day || false)
+      setRequiresExemption(event.requires_exemption || false)
 
       if (event.id) {
         loadAttendances()
@@ -152,6 +154,7 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
       location,
       color,
       is_all_day: isAllDay,
+      requires_exemption: requiresExemption,
       start_datetime: startDateTime.toISOString(),
       end_datetime: endDateTime.toISOString(),
     }
@@ -262,7 +265,7 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
 
             {/* All Day Checkbox */}
             {canEdit && (
-              <div>
+              <div className="space-y-3">
                 <label className="flex items-center space-x-3 text-sm font-medium text-gray-700 cursor-pointer">
                   <input
                     type="checkbox"
@@ -272,6 +275,16 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
                     className="w-5 h-5 rounded-lg border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
                   <span>Ganztägiger Termin</span>
+                </label>
+                <label className="flex items-center space-x-3 text-sm font-medium text-gray-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={requiresExemption}
+                    onChange={(e) => setRequiresExemption(e.target.checked)}
+                    disabled={!canEdit}
+                    className="w-5 h-5 rounded-lg border-gray-300 text-secondary-600 focus:ring-secondary-500"
+                  />
+                  <span>Freistellung benötigt</span>
                 </label>
               </div>
             )}

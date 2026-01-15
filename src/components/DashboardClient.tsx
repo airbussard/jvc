@@ -7,6 +7,7 @@ import type { User } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 import CalendarView from '@/components/CalendarView'
 import AvailabilityView from '@/components/AvailabilityView'
+import ExemptionsView from '@/components/ExemptionsView'
 import AdminPanel from '@/components/AdminPanel'
 import ProfileSettings from '@/components/ProfileSettings'
 
@@ -43,6 +44,12 @@ const SettingsIcon = () => (
   </svg>
 )
 
+const DocumentIcon = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+  </svg>
+)
+
 export default function DashboardClient({ user, profile }: DashboardClientProps) {
   const [activeTab, setActiveTab] = useState('calendar')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -57,6 +64,7 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
   const tabs = [
     { id: 'calendar', name: 'Kalender', icon: CalendarIcon, available: true },
     { id: 'availability', name: 'Verfügbarkeit', icon: UsersIcon, available: true },
+    { id: 'exemptions', name: 'Freistellungen', icon: DocumentIcon, available: true },
     { id: 'profile', name: 'Profil', icon: UserIcon, available: true },
     { id: 'admin', name: 'Verwaltung', icon: SettingsIcon, available: profile.role === 'admin' },
   ]
@@ -204,6 +212,7 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
       <main className="mx-auto max-w-7xl px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
         {activeTab === 'calendar' && <CalendarView userRole={profile.role} />}
         {activeTab === 'availability' && <AvailabilityView />}
+        {activeTab === 'exemptions' && <ExemptionsView />}
         {activeTab === 'profile' && <ProfileSettings user={user} profile={profile} />}
         {activeTab === 'admin' && profile.role === 'admin' && <AdminPanel />}
       </main>
