@@ -52,35 +52,20 @@ export default function ExemptionsView() {
   }
 
   const loadExemptions = async () => {
-    // Load events that require exemption
-    const { data: eventsData, error: eventsError } = await (supabase as any)
-      .from('events')
-      .select('*')
-      .eq('requires_exemption', true)
-      .order('start_datetime', { ascending: true })
-
-    if (eventsError || !eventsData) {
-      console.error('Error loading events:', eventsError)
-      return
-    }
-
-    const events = eventsData as any[]
-
-    if (events.length === 0) {
-      setExemptions([])
-      return
-    }
-
-    // Load attendances for these events (only attending_onsite and attending_hybrid)
-    const eventIds = events.map((e: any) => e.id)
+    // Load attendances where requires_exemption = true (nur Vor Ort und Hybrid)
     const { data: attendances, error: attendancesError } = await (supabase as any)
       .from('event_attendances')
-      .select('*, profiles(id, full_name, airline_id)')
-      .in('event_id', eventIds)
+      .select('*, profiles(id, full_name, airline_id), events(id, title, start_datetime, end_datetime, is_all_day)')
+      .eq('requires_exemption', true)
       .in('status', ['attending_onsite', 'attending_hybrid'])
 
     if (attendancesError) {
       console.error('Error loading attendances:', attendancesError)
+      return
+    }
+
+    if (!attendances || attendances.length === 0) {
+      setExemptions([])
       return
     }
 
@@ -94,8 +79,8 @@ export default function ExemptionsView() {
     // Build exemption entries
     const entries: ExemptionEntry[] = []
 
-    for (const attendance of (attendances || [])) {
-      const event = events.find((e: any) => e.id === attendance.event_id)
+    for (const attendance of attendances) {
+      const event = (attendance as any).events
       const profile = (attendance as any).profiles as Profile | null
 
       if (event && profile) {

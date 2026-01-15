@@ -62,7 +62,6 @@ export type Database = {
           location: string | null
           color: string | null
           is_all_day: boolean
-          requires_exemption: boolean
           created_by: string
           created_at: string
           updated_at: string
@@ -76,7 +75,6 @@ export type Database = {
           location?: string | null
           color?: string | null
           is_all_day?: boolean
-          requires_exemption?: boolean
           created_by: string
           created_at?: string
           updated_at?: string
@@ -90,7 +88,6 @@ export type Database = {
           location?: string | null
           color?: string | null
           is_all_day?: boolean
-          requires_exemption?: boolean
           created_by?: string
           created_at?: string
           updated_at?: string
@@ -151,6 +148,7 @@ export type Database = {
           event_id: string
           user_id: string
           status: 'attending_onsite' | 'attending_hybrid' | 'absent'
+          requires_exemption: boolean
           created_at: string
           updated_at: string
         }
@@ -159,6 +157,7 @@ export type Database = {
           event_id: string
           user_id: string
           status: 'attending_onsite' | 'attending_hybrid' | 'absent'
+          requires_exemption?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -167,6 +166,7 @@ export type Database = {
           event_id?: string
           user_id?: string
           status?: 'attending_onsite' | 'attending_hybrid' | 'absent'
+          requires_exemption?: boolean
           created_at?: string
           updated_at?: string
         }

@@ -32,7 +32,6 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
   const [location, setLocation] = useState(event?.location || '')
   const [color, setColor] = useState(event?.color || '#1e5a8f')
   const [isAllDay, setIsAllDay] = useState(event?.is_all_day || false)
-  const [requiresExemption, setRequiresExemption] = useState(event?.requires_exemption || false)
   const [startDate, setStartDate] = useState('')
   const [startTime, setStartTime] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -40,6 +39,7 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [myAttendance, setMyAttendance] = useState<AttendanceStatus | null>(null)
+  const [myRequiresExemption, setMyRequiresExemption] = useState(false)
   const [attendances, setAttendances] = useState<any[]>([])
   const [currentUser, setCurrentUser] = useState<any>(null)
   const supabase = createClient()
@@ -55,7 +55,6 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
       setEndTime(format(end, 'HH:mm'))
       setColor(event.color || '#1e5a8f')
       setIsAllDay(event.is_all_day || false)
-      setRequiresExemption(event.requires_exemption || false)
 
       if (event.id) {
         loadAttendances()
@@ -70,15 +69,16 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
     setCurrentUser(user)
 
     if (user && event?.id) {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from('event_attendances')
-        .select('status')
+        .select('status, requires_exemption')
         .eq('event_id', event.id)
         .eq('user_id', user.id)
         .single()
 
       if (data) {
         setMyAttendance((data as any).status as AttendanceStatus)
+        setMyRequiresExemption((data as any).requires_exemption || false)
       }
     }
   }
@@ -107,6 +107,7 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
         .eq('user_id', currentUser.id)
 
       setMyAttendance(null)
+      setMyRequiresExemption(false)
     } else {
       const { data: existing } = await supabase
         .from('event_attendances')
@@ -118,7 +119,7 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
       if (existing) {
         await (supabase as any)
           .from('event_attendances')
-          .update({ status })
+          .update({ status, requires_exemption: myRequiresExemption })
           .eq('id', (existing as any).id)
       } else {
         await (supabase as any)
@@ -126,7 +127,8 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
           .insert({
             event_id: event.id,
             user_id: currentUser.id,
-            status
+            status,
+            requires_exemption: myRequiresExemption
           })
       }
 
@@ -134,6 +136,19 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
     }
 
     loadAttendances()
+  }
+
+  const handleExemptionChange = async (checked: boolean) => {
+    setMyRequiresExemption(checked)
+
+    if (!event?.id || !currentUser || !myAttendance) return
+
+    // Update existing attendance with new exemption status
+    await (supabase as any)
+      .from('event_attendances')
+      .update({ requires_exemption: checked })
+      .eq('event_id', event.id)
+      .eq('user_id', currentUser.id)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -154,7 +169,6 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
       location,
       color,
       is_all_day: isAllDay,
-      requires_exemption: requiresExemption,
       start_datetime: startDateTime.toISOString(),
       end_datetime: endDateTime.toISOString(),
     }
@@ -275,16 +289,6 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
                     className="w-5 h-5 rounded-lg border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
                   <span>Ganztägiger Termin</span>
-                </label>
-                <label className="flex items-center space-x-3 text-sm font-medium text-gray-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={requiresExemption}
-                    onChange={(e) => setRequiresExemption(e.target.checked)}
-                    disabled={!canEdit}
-                    className="w-5 h-5 rounded-lg border-gray-300 text-secondary-600 focus:ring-secondary-500"
-                  />
-                  <span>Freistellung benötigt</span>
                 </label>
               </div>
             )}
@@ -419,6 +423,21 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
                   </button>
                 )}
               </div>
+
+              {/* Exemption Checkbox - only visible when attending */}
+              {myAttendance && myAttendance !== 'absent' && (
+                <div className="mt-4">
+                  <label className="flex items-center space-x-3 text-sm font-medium text-gray-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={myRequiresExemption}
+                      onChange={(e) => handleExemptionChange(e.target.checked)}
+                      className="w-5 h-5 rounded-lg border-gray-300 text-secondary-600 focus:ring-secondary-500"
+                    />
+                    <span>Ich benötige eine Freistellung</span>
+                  </label>
+                </div>
+              )}
 
               {attendances.length > 0 && (
                 <div className="mt-5">

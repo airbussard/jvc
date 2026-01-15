@@ -31,49 +31,27 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const airline = airlineData as { id: string; name: string; created_at: string }
 
-    // Load events that require exemption
-    const { data: eventsData, error: eventsError } = await (supabase as any)
-      .from('events')
-      .select('*')
-      .eq('requires_exemption', true)
-      .order('start_datetime', { ascending: true })
-
-    if (eventsError) {
-      throw eventsError
-    }
-
-    const events = eventsData as any[]
-
-    if (!events || events.length === 0) {
-      return NextResponse.json({ error: 'Keine Termine mit Freistellung gefunden' }, { status: 404 })
-    }
-
-    // Load attendances for these events
-    const eventIds = events.map((e: any) => e.id)
+    // Load attendances where requires_exemption = true, filtered by airline
     const { data: attendances, error: attendancesError } = await (supabase as any)
       .from('event_attendances')
-      .select('*, profiles(id, full_name, airline_id)')
-      .in('event_id', eventIds)
+      .select('*, profiles!inner(id, full_name, airline_id), events(id, title, start_datetime, end_datetime, is_all_day)')
+      .eq('requires_exemption', true)
+      .eq('profiles.airline_id', airlineId)
       .in('status', ['attending_onsite', 'attending_hybrid'])
 
     if (attendancesError) {
       throw attendancesError
     }
 
-    // Filter by airline
-    const filteredAttendances = (attendances || []).filter((att: any) =>
-      att.profiles?.airline_id === airlineId
-    )
-
-    if (filteredAttendances.length === 0) {
+    if (!attendances || attendances.length === 0) {
       return NextResponse.json({ error: 'Keine Freistellungen für diese Airline' }, { status: 404 })
     }
 
     // Build exemption data
     const exemptions: { name: string; eventTitle: string; date: string }[] = []
 
-    for (const attendance of filteredAttendances) {
-      const event = events.find(e => e.id === attendance.event_id)
+    for (const attendance of attendances) {
+      const event = (attendance as any).events
       const profile = (attendance as any).profiles
 
       if (event && profile) {
