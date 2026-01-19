@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import PDFDocument from 'pdfkit'
 
+// Aviation Clarity Design System Colors
+const COLORS = {
+  navy: '#001a3f',
+  lime: '#c4d82e',
+  lightGray: '#f8fafc',
+  mediumGray: '#94a3b8',
+  darkGray: '#475569',
+  white: '#ffffff',
+}
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const supabase = await createServerSupabaseClient()
 
@@ -129,10 +139,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       ? new Date(filterYear, filterMonth - 1, 1).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })
       : null
 
-    // Generate PDF
+    // Generate PDF with Aviation Clarity Design
     const doc = new PDFDocument({
       size: 'A4',
-      margin: 50,
+      margins: { top: 50, bottom: 50, left: 50, right: 50 },
       info: {
         Title: `Freistellungen - ${airline.name}${monthLabel ? ` - ${monthLabel}` : ''}`,
         Author: 'jVC Terminverwaltung',
@@ -142,39 +152,76 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const chunks: Buffer[] = []
     doc.on('data', (chunk) => chunks.push(chunk))
 
-    // Header
-    doc.fontSize(20).font('Helvetica-Bold').text('jVC - Freistellungen', { align: 'center' })
-    doc.moveDown(0.5)
-    doc.fontSize(14).font('Helvetica').text(`Airline: ${airline.name}`, { align: 'center' })
+    const pageWidth = doc.page.width
+    const contentWidth = pageWidth - 100 // 50px margins on each side
+
+    // ===== HEADER SECTION =====
+
+    // Lime accent line at top
+    doc.save()
+    doc.fillColor(COLORS.lime).rect(0, 0, pageWidth, 4).fill()
+    doc.restore()
+
+    // Title
+    doc.moveDown(2)
+    doc.fontSize(32).font('Helvetica-Bold').fillColor(COLORS.navy)
+    doc.text('FREISTELLUNGEN', { align: 'center' })
+
+    // Airline name with letter spacing
+    doc.moveDown(0.4)
+    doc.fontSize(14).font('Helvetica').fillColor(COLORS.darkGray)
+    doc.text(airline.name.toUpperCase(), { align: 'center', characterSpacing: 3 })
+
+    // Month label
     if (monthLabel) {
-      doc.fontSize(12).text(`Zeitraum: ${monthLabel}`, { align: 'center' })
+      doc.moveDown(0.6)
+      doc.fontSize(12).fillColor(COLORS.darkGray)
+      doc.text(monthLabel, { align: 'center' })
     }
-    doc.fontSize(10).text(`Erstellt am: ${new Date().toLocaleDateString('de-DE', {
+
+    // Creation date
+    doc.moveDown(0.4)
+    doc.fontSize(9).fillColor(COLORS.mediumGray)
+    doc.text(`Erstellt: ${new Date().toLocaleDateString('de-DE', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     })}`, { align: 'center' })
+
+    // Navy separator line
+    doc.moveDown(1.5)
+    const separatorY = doc.y
+    doc.save()
+    doc.strokeColor(COLORS.navy).lineWidth(1)
+    doc.moveTo(50, separatorY).lineTo(pageWidth - 50, separatorY).stroke()
+    doc.restore()
     doc.moveDown(2)
 
-    // Table header
-    const tableTop = doc.y
-    const col1 = 50
+    // ===== TABLE SECTION =====
+
+    // Column definitions
+    const col1 = 55 // Leave room for lime accent
     const col2 = 200
-    const col3 = 380
-    const colWidth1 = 145
-    const colWidth2 = 175
-    const colWidth3 = 130
+    const col3 = 390
+    const colWidth1 = 140
+    const colWidth2 = 185
+    const colWidth3 = 115
+    const rowHeight = 22
 
-    doc.font('Helvetica-Bold').fontSize(11)
-    doc.text('Name', col1, tableTop, { width: colWidth1 })
-    doc.text('Termin', col2, tableTop, { width: colWidth2 })
-    doc.text('Datum', col3, tableTop, { width: colWidth3 })
+    // Table header with navy background
+    const tableHeaderY = doc.y
+    doc.save()
+    doc.fillColor(COLORS.navy).rect(50, tableHeaderY - 6, contentWidth, 28).fill()
+    doc.restore()
 
-    // Header underline
-    doc.moveTo(col1, tableTop + 18).lineTo(col3 + colWidth3, tableTop + 18).stroke()
-    doc.moveDown(1.5)
+    doc.font('Helvetica-Bold').fontSize(10).fillColor(COLORS.white)
+    doc.text('NAME', col1, tableHeaderY, { width: colWidth1 })
+    doc.text('TERMIN', col2, tableHeaderY, { width: colWidth2 })
+    doc.text('DATUM', col3, tableHeaderY, { width: colWidth3 })
+
+    doc.y = tableHeaderY + 32
 
     // Table rows
     doc.font('Helvetica').fontSize(10)
@@ -184,31 +231,78 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       const y = doc.y
 
       // Check if we need a new page
-      if (y > 750) {
+      if (y > doc.page.height - 80) {
         doc.addPage()
-        rowIndex = 0
-      }
 
-      // Zebra striping
-      if (rowIndex % 2 === 1) {
+        // Lime accent at top of new page
         doc.save()
-        doc.fillColor('#f3f4f6').rect(col1 - 5, y - 3, col3 + colWidth3 - col1 + 10, 18).fill()
+        doc.fillColor(COLORS.lime).rect(0, 0, pageWidth, 4).fill()
         doc.restore()
-        doc.fillColor('#000000')
+
+        doc.y = 60
+        rowIndex = 0
+
+        // Repeat table header on new page
+        const newHeaderY = doc.y
+        doc.save()
+        doc.fillColor(COLORS.navy).rect(50, newHeaderY - 6, contentWidth, 28).fill()
+        doc.restore()
+
+        doc.font('Helvetica-Bold').fontSize(10).fillColor(COLORS.white)
+        doc.text('NAME', col1, newHeaderY, { width: colWidth1 })
+        doc.text('TERMIN', col2, newHeaderY, { width: colWidth2 })
+        doc.text('DATUM', col3, newHeaderY, { width: colWidth3 })
+
+        doc.y = newHeaderY + 32
+        doc.font('Helvetica').fontSize(10)
       }
 
-      doc.text(item.name, col1, y, { width: colWidth1 })
-      doc.text(item.eventTitle, col2, y, { width: colWidth2 })
-      doc.text(item.date, col3, y, { width: colWidth3 })
+      const currentY = doc.y
 
-      doc.moveDown(0.8)
+      // Zebra striping (very subtle)
+      if (rowIndex % 2 === 0) {
+        doc.save()
+        doc.fillColor(COLORS.lightGray).rect(50, currentY - 4, contentWidth, rowHeight).fill()
+        doc.restore()
+      }
+
+      // Lime accent line on left
+      doc.save()
+      doc.fillColor(COLORS.lime).rect(50, currentY - 4, 3, rowHeight).fill()
+      doc.restore()
+
+      // Row content
+      doc.fillColor(COLORS.navy)
+      doc.text(item.name, col1, currentY, { width: colWidth1, ellipsis: true })
+      doc.text(item.eventTitle, col2, currentY, { width: colWidth2, ellipsis: true })
+      doc.text(item.date, col3, currentY, { width: colWidth3 })
+
+      doc.y = currentY + rowHeight
       rowIndex++
     }
 
-    // Footer
-    doc.moveDown(2)
-    doc.fontSize(9).fillColor('#6b7280')
-    doc.text(`Gesamt: ${exemptions.length} Freistellung${exemptions.length !== 1 ? 'en' : ''}`, col1)
+    // ===== FOOTER SECTION =====
+
+    // Footer line and text at bottom
+    const footerY = doc.page.height - 55
+
+    // Lime footer line
+    doc.save()
+    doc.strokeColor(COLORS.lime).lineWidth(1)
+    doc.moveTo(50, footerY).lineTo(pageWidth - 50, footerY).stroke()
+    doc.restore()
+
+    // Total count
+    doc.fontSize(10).font('Helvetica-Bold').fillColor(COLORS.navy)
+    doc.text(
+      `Gesamt: ${exemptions.length} Freistellung${exemptions.length !== 1 ? 'en' : ''}`,
+      50,
+      footerY + 12
+    )
+
+    // jVC branding (subtle)
+    doc.fontSize(8).font('Helvetica').fillColor(COLORS.mediumGray)
+    doc.text('jVC Terminverwaltung', pageWidth - 140, footerY + 14)
 
     doc.end()
 
