@@ -163,7 +163,7 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
       {message && (
         <div className={`p-4 rounded-xl ${
           message.type === 'success'
-            ? 'bg-secondary-50 border border-secondary-200 text-secondary-700'
+            ? 'bg-accent-50 border border-accent-200 text-accent-800'
             : 'bg-red-50 border border-red-200 text-red-700'
         }`}>
           <p className="text-sm font-medium">{message.text}</p>

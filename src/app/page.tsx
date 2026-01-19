@@ -3,17 +3,17 @@
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-cool flex flex-col items-center justify-center p-8 relative overflow-hidden">
-      {/* Decorative background shapes */}
+      {/* Decorative background shapes - Lime accents */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-secondary-200/40 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-accent-200/40 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary-200/30 rounded-full blur-3xl transform -translate-x-1/3 translate-y-1/3" />
-        <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-secondary-100/30 rounded-full blur-3xl transform -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-accent-100/30 rounded-full blur-3xl transform -translate-x-1/2 -translate-y-1/2" />
       </div>
 
       <div className="text-center relative z-10 animate-slide-up">
         {/* Logo */}
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary-900 mb-8 hover-lift">
-          <span className="text-3xl text-white font-bold">jVC</span>
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-accent-500 mb-8 hover-lift shadow-lg">
+          <span className="text-3xl text-primary-900 font-bold">jVC</span>
         </div>
 
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-neutral-900 mb-4">
@@ -40,7 +40,7 @@ export default function HomePage() {
         {/* Feature highlights */}
         <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
           <div className="card p-6 text-center hover-lift">
-            <div className="w-12 h-12 rounded-xl bg-secondary-100 text-secondary-600 flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 rounded-xl bg-accent-100 text-accent-700 flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
               </svg>

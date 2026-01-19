@@ -206,7 +206,7 @@ export default function AdminPanel() {
       {message && (
         <div className={`p-4 rounded-xl ${
           message.type === 'success'
-            ? 'bg-secondary-50 border border-secondary-200 text-secondary-700'
+            ? 'bg-accent-50 border border-accent-200 text-accent-800'
             : 'bg-red-50 border border-red-200 text-red-700'
         }`}>
           <p className="text-sm font-medium">{message.text}</p>
@@ -263,7 +263,7 @@ export default function AdminPanel() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleUpdateAirline(airline.id)}
-                          className="text-secondary-600 hover:text-secondary-700 text-sm font-medium transition-colors"
+                          className="text-accent-700 hover:text-accent-800 text-sm font-medium transition-colors"
                         >
                           Speichern
                         </button>

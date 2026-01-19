@@ -207,9 +207,10 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
 
   const eventStyleGetter = (event: CustomEvent) => {
     let backgroundColor = event.color || '#001a3f'
-    let border = event.hasMyAttendance ? '2px solid #34bcee' : '0px'
+    // Lime border für eigene Teilnahme (vcockpit.de style)
+    let border = event.hasMyAttendance ? '2px solid #c4d82e' : '0px'
     let boxShadow = event.hasMyAttendance
-      ? '0 0 0 2px rgba(52, 188, 238, 0.3), 0 4px 12px rgba(0,0,0,0.15)'
+      ? '0 0 0 2px rgba(196, 216, 46, 0.3), 0 4px 12px rgba(0,0,0,0.15)'
       : '0 2px 8px rgba(0,0,0,0.1)'
 
     // Abwesenheits-Styling
@@ -270,7 +271,7 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
                     })
                     setShowEventModal(true)
                   }}
-                  className="glass-button-secondary text-sm px-4 py-2"
+                  className="btn-primary text-sm px-4 py-2"
                 >
                   Neuer Termin
                 </button>

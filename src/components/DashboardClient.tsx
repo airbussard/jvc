@@ -73,8 +73,8 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
             <div className="flex">
               <div className="flex flex-shrink-0 items-center">
                 <div className="flex items-center space-x-3">
-                  <div className="w-9 h-9 rounded-xl bg-secondary-500 flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">jVC</span>
+                  <div className="w-9 h-9 rounded-lg bg-accent-500 flex items-center justify-center shadow-sm">
+                    <span className="text-primary-900 font-bold text-sm">jVC</span>
                   </div>
                   <h1 className="text-lg sm:text-xl font-semibold text-white">
                     <span className="hidden sm:inline">Terminverwaltung</span>

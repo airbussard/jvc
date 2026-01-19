@@ -16,13 +16,13 @@ interface EventModalProps {
 }
 
 const colorOptions = [
-  { value: '#1e5a8f', label: 'Dunkelblau', class: 'bg-primary-500' },
-  { value: '#10b981', label: 'Grün', class: 'bg-secondary-500' },
+  { value: '#001a3f', label: 'Dunkelblau', class: 'bg-primary-900' },
+  { value: '#c4d82e', label: 'Lime', class: 'bg-accent-500' },
   { value: '#3b82f6', label: 'Blau', class: 'bg-blue-500' },
+  { value: '#10b981', label: 'Grün', class: 'bg-emerald-500' },
   { value: '#f59e0b', label: 'Orange', class: 'bg-amber-500' },
   { value: '#ef4444', label: 'Rot', class: 'bg-red-500' },
   { value: '#8b5cf6', label: 'Lila', class: 'bg-purple-500' },
-  { value: '#ec4899', label: 'Pink', class: 'bg-pink-500' },
   { value: '#14b8a6', label: 'Türkis', class: 'bg-teal-500' },
 ]
 
@@ -305,7 +305,7 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
                       onClick={() => setColor(option.value)}
                       className={`w-10 h-10 rounded-xl transition-all duration-200 ${option.class} ${
                         color === option.value
-                          ? 'ring-2 ring-offset-2 ring-primary-500 scale-110 shadow-lg'
+                          ? 'ring-2 ring-offset-2 ring-accent-500 scale-110 shadow-lg'
                           : 'hover:scale-105 shadow-md'
                       }`}
                       title={option.label}
@@ -385,7 +385,7 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
                   onClick={() => handleAttendanceChange('attending_onsite')}
                   className={`px-4 py-3 text-sm rounded-xl border-2 transition-all duration-200 ${
                     myAttendance === 'attending_onsite'
-                      ? 'bg-secondary-100 border-secondary-500 text-secondary-700 shadow-md'
+                      ? 'bg-accent-100 border-accent-500 text-accent-800 shadow-md'
                       : 'bg-white/50 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
                   }`}
                 >
@@ -432,7 +432,7 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
                       type="checkbox"
                       checked={myRequiresExemption}
                       onChange={(e) => handleExemptionChange(e.target.checked)}
-                      className="w-5 h-5 rounded-lg border-gray-300 text-secondary-600 focus:ring-secondary-500"
+                      className="w-5 h-5 rounded-lg border-gray-300 text-accent-600 focus:ring-accent-500"
                     />
                     <span>Ich benötige eine Freistellung</span>
                   </label>
@@ -447,7 +447,7 @@ export default function EventModalExtended({ event, canEdit, onClose, onSave }: 
                       <div key={att.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
                         <span className="text-sm font-medium text-gray-900">{att.profiles?.full_name || 'Unbekannt'}</span>
                         <span className={`px-3 py-1 rounded-lg text-xs font-medium ${
-                          att.status === 'attending_onsite' ? 'bg-secondary-100 text-secondary-700' :
+                          att.status === 'attending_onsite' ? 'bg-accent-100 text-accent-800' :
                           att.status === 'attending_hybrid' ? 'bg-blue-100 text-blue-700' :
                           'bg-red-100 text-red-700'
                         }`}>

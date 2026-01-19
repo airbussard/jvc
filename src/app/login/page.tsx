@@ -33,17 +33,17 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-cool px-4 py-8">
-      {/* Decorative background elements */}
+      {/* Decorative background elements - Lime accents */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-secondary-200/30 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-accent-200/30 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary-200/20 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
       </div>
 
       <div className="card w-full max-w-md p-8 animate-scale-in relative">
         {/* Logo und Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary-900 mb-4 hover-lift">
-            <span className="text-2xl text-white font-bold">jVC</span>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent-500 mb-4 hover-lift shadow-md">
+            <span className="text-2xl text-primary-900 font-bold">jVC</span>
           </div>
           <h1 className="text-2xl font-bold text-neutral-900">
             Willkommen zurück
@@ -117,7 +117,7 @@ export default function LoginPage() {
           <div className="text-center pt-2">
             <Link
               href="/forgot-password"
-              className="text-sm text-primary-600 hover:text-primary-700 transition-colors font-medium"
+              className="text-sm text-accent-700 hover:text-accent-800 transition-colors font-medium"
             >
               Passwort vergessen?
             </Link>
