@@ -77,10 +77,12 @@ export default function CalendarView({ userRole }: CalendarViewProps) {
       .order('start_datetime', { ascending: true })
 
     if (!error && data && user) {
+      // Nur Teilnahmen mit Status "attending_onsite" oder "attending_hybrid" (nicht "absent")
       const { data: attendances } = await supabase
         .from('event_attendances')
         .select('event_id')
         .eq('user_id', user.id)
+        .in('status', ['attending_onsite', 'attending_hybrid'])
 
       const attendedEventIds = attendances?.map((a: any) => a.event_id) || []
 
