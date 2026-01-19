@@ -65,11 +65,7 @@ export function GlassSelect<T extends string>({
                 <Listbox.Option
                   key={option.value}
                   value={option.value}
-                  className={({ active, selected }) =>
-                    `glass-listbox-option ${
-                      active ? 'bg-primary-50' : ''
-                    } ${selected ? 'bg-primary-100' : ''}`
-                  }
+                  className="glass-listbox-option"
                 >
                   {({ selected }) => (
                     <>
@@ -81,7 +77,7 @@ export function GlassSelect<T extends string>({
                         {option.label}
                       </span>
                       {selected && (
-                        <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-primary-600">
+                        <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-accent-600">
                           <svg
                             className="h-5 w-5"
                             viewBox="0 0 20 20"

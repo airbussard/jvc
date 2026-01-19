@@ -239,6 +239,64 @@
   }
 
   /* ============================================
+     LISTBOX/DROPDOWN - Headless UI Styling
+     ============================================ */
+
+  .glass-listbox-button {
+    @apply relative w-full cursor-pointer rounded-xl
+           bg-white border border-neutral-200
+           py-3 pl-4 pr-10 text-left text-sm
+           shadow-sm transition-all duration-200;
+  }
+
+  .glass-listbox-button:hover {
+    @apply border-primary-300 shadow-md;
+  }
+
+  .glass-listbox-button:focus {
+    @apply outline-none ring-2 ring-primary-500/20 border-primary-400;
+  }
+
+  .glass-listbox-options {
+    @apply absolute z-50 mt-2 w-full overflow-auto
+           rounded-xl bg-white py-1
+           shadow-xl border border-neutral-200
+           focus:outline-none;
+    max-height: 15rem;
+  }
+
+  .glass-listbox-option {
+    @apply relative cursor-pointer select-none
+           py-3 px-4 text-sm text-neutral-700
+           transition-all duration-150;
+    border-left: 3px solid transparent;
+  }
+
+  /* Hover state */
+  .glass-listbox-option:hover {
+    @apply bg-primary-50 text-primary-900;
+    border-left-color: var(--primary-400);
+  }
+
+  /* Selected state - deutlicher Lime-Akzent */
+  .glass-listbox-option[data-headlessui-state~="selected"] {
+    @apply bg-accent-100 text-primary-900 font-semibold;
+    border-left-color: var(--accent-500);
+  }
+
+  /* Active (keyboard focus) state */
+  .glass-listbox-option[data-headlessui-state~="active"] {
+    @apply bg-primary-50;
+    border-left-color: var(--primary-400);
+  }
+
+  /* Selected + Active combined */
+  .glass-listbox-option[data-headlessui-state~="selected"][data-headlessui-state~="active"] {
+    @apply bg-accent-200;
+    border-left-color: var(--accent-500);
+  }
+
+  /* ============================================
      NAVIGATION - Solid, professional
      ============================================ */
   .nav {
