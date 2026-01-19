@@ -65,37 +65,35 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
   const availableTabs = tabs.filter(tab => tab.available)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-secondary-50/20">
+    <div className="min-h-screen bg-neutral-50">
       {/* Navigation */}
-      <nav className="glass-nav-solid sticky top-0 z-40">
+      <nav className="nav sticky top-0 z-40">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 justify-between">
             <div className="flex">
               <div className="flex flex-shrink-0 items-center">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary-400 to-secondary-600 flex items-center justify-center shadow-lg">
-                    <span className="text-white font-bold text-xs">jVC</span>
+                <div className="flex items-center space-x-3">
+                  <div className="w-9 h-9 rounded-xl bg-secondary-500 flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">jVC</span>
                   </div>
-                  <h1 className="text-lg sm:text-xl font-bold text-white">
+                  <h1 className="text-lg sm:text-xl font-semibold text-white">
                     <span className="hidden sm:inline">Terminverwaltung</span>
                     <span className="sm:hidden">jVC</span>
                   </h1>
                 </div>
               </div>
               {/* Desktop tabs */}
-              <div className="hidden sm:ml-8 sm:flex sm:space-x-1">
+              <div className="hidden sm:ml-8 sm:flex sm:items-center sm:space-x-1">
                 {availableTabs.map((tab) => {
                   const IconComponent = tab.icon
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`glass-tab ${
-                        activeTab === tab.id ? 'glass-tab-active' : ''
-                      }`}
+                      className={`nav-tab ${activeTab === tab.id ? 'nav-tab-active' : ''}`}
                     >
                       <IconComponent />
-                      <span className="ml-2">{tab.name}</span>
+                      <span>{tab.name}</span>
                     </button>
                   )
                 })}
@@ -106,7 +104,7 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
             <div className="flex items-center sm:hidden">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200"
+                className="inline-flex items-center justify-center p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
                 aria-label={mobileMenuOpen ? 'Menü schließen' : 'Menü öffnen'}
                 aria-expanded={mobileMenuOpen}
               >
@@ -137,18 +135,18 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
 
             {/* Desktop user info */}
             <div className="hidden sm:flex sm:items-center sm:space-x-4">
-              <span className="text-sm text-white/90 flex items-center">
+              <span className="text-sm text-white/90 flex items-center gap-2">
                 <span className="hidden lg:inline">{profile.full_name || user.email}</span>
                 <span className="lg:hidden">{profile.full_name?.split(' ')[0] || user.email?.split('@')[0]}</span>
                 {profile.role !== 'normal' && (
-                  <span className="ml-2 glass-badge glass-badge-success">
+                  <span className="badge-light">
                     {profile.role === 'admin' ? 'Admin' : 'Mod'}
                   </span>
                 )}
               </span>
               <button
                 onClick={handleLogout}
-                className="glass-button-ghost text-sm px-4 py-2"
+                className="btn-ghost text-sm px-4 py-2 text-white/80 hover:text-white border-white/20 hover:border-white/30 hover:bg-white/10"
               >
                 Abmelden
               </button>
@@ -158,7 +156,7 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="sm:hidden bg-primary-800/95 backdrop-blur-xl border-t border-white/10">
+          <div className="sm:hidden bg-primary-800 border-t border-white/10 animate-slide-down">
             <div className="pt-2 pb-3 space-y-1 px-4">
               {availableTabs.map((tab) => {
                 const IconComponent = tab.icon
@@ -169,14 +167,14 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
                       setActiveTab(tab.id)
                       setMobileMenuOpen(false)
                     }}
-                    className={`flex items-center w-full text-left px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
+                    className={`flex items-center gap-3 w-full text-left px-4 py-3 rounded-lg text-base font-medium transition-all ${
                       activeTab === tab.id
-                        ? 'bg-white/20 text-white'
+                        ? 'bg-white/15 text-white'
                         : 'text-white/70 hover:bg-white/10 hover:text-white'
                     }`}
                   >
                     <IconComponent />
-                    <span className="ml-3">{tab.name}</span>
+                    <span>{tab.name}</span>
                   </button>
                 )
               })}
@@ -187,14 +185,14 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
                   <div className="font-medium">{profile.full_name || 'Unbekannt'}</div>
                   <div className="text-sm text-white/60">{user.email}</div>
                   {profile.role !== 'normal' && (
-                    <span className="inline-block mt-2 glass-badge glass-badge-success">
+                    <span className="inline-block mt-2 badge-light">
                       {profile.role === 'admin' ? 'Administrator' : 'Moderator'}
                     </span>
                   )}
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="w-full glass-button-ghost text-sm py-2"
+                  className="w-full btn-ghost text-sm py-2 text-white/80 border-white/20"
                 >
                   Abmelden
                 </button>
