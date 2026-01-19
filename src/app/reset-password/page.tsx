@@ -41,8 +41,8 @@ export default function ResetPasswordPage() {
       return
     }
 
-    if (password.length < 6) {
-      setError('Das Passwort muss mindestens 6 Zeichen lang sein')
+    if (password.length < 12) {
+      setError('Das Passwort muss mindestens 12 Zeichen lang sein')
       setLoading(false)
       return
     }
@@ -196,7 +196,7 @@ export default function ResetPasswordPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="glass-input-solid w-full"
-              placeholder="Mindestens 6 Zeichen"
+              placeholder="Mindestens 12 Zeichen"
             />
           </div>
 

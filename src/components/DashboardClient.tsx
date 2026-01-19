@@ -9,6 +9,7 @@ import CalendarView from '@/components/CalendarView'
 import ExemptionsView from '@/components/ExemptionsView'
 import AdminPanel from '@/components/AdminPanel'
 import ProfileSettings from '@/components/ProfileSettings'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -106,6 +107,8 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="inline-flex items-center justify-center p-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200"
+                aria-label={mobileMenuOpen ? 'Menü schließen' : 'Menü öffnen'}
+                aria-expanded={mobileMenuOpen}
               >
                 <svg
                   className="h-6 w-6"
@@ -202,10 +205,12 @@ export default function DashboardClient({ user, profile }: DashboardClientProps)
       </nav>
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
-        {activeTab === 'calendar' && <CalendarView userRole={profile.role} />}
-        {activeTab === 'exemptions' && <ExemptionsView />}
-        {activeTab === 'profile' && <ProfileSettings user={user} profile={profile} />}
-        {activeTab === 'admin' && profile.role === 'admin' && <AdminPanel />}
+        <ErrorBoundary>
+          {activeTab === 'calendar' && <CalendarView userRole={profile.role} />}
+          {activeTab === 'exemptions' && <ExemptionsView />}
+          {activeTab === 'profile' && <ProfileSettings user={user} profile={profile} />}
+          {activeTab === 'admin' && profile.role === 'admin' && <AdminPanel />}
+        </ErrorBoundary>
       </main>
     </div>
   )

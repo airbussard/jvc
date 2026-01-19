@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient, createServerSupabaseClient } from '@/lib/supabase-server'
 
+// Valide Rollen
+const VALID_ROLES = ['normal', 'moderator', 'admin'] as const
+type ValidRole = typeof VALID_ROLES[number]
+
+// Email-Validierung (RFC 5322 vereinfacht)
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient()
@@ -21,7 +31,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 })
     }
 
-    const { email, name, role } = await request.json()
+    // Input-Validierung
+    let body: { email?: string; name?: string; role?: string }
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Ungültiges JSON-Format' }, { status: 400 })
+    }
+
+    const { email, name, role } = body
+
+    // Email validieren
+    if (!email || typeof email !== 'string' || !isValidEmail(email)) {
+      return NextResponse.json({ error: 'Ungültige E-Mail-Adresse' }, { status: 400 })
+    }
+
+    // Name validieren
+    if (!name || typeof name !== 'string' || name.trim().length < 2) {
+      return NextResponse.json({ error: 'Name muss mindestens 2 Zeichen haben' }, { status: 400 })
+    }
+
+    // Rolle validieren (Whitelist!)
+    if (!role || !VALID_ROLES.includes(role as ValidRole)) {
+      return NextResponse.json({ error: 'Ungültige Rolle. Erlaubt: normal, moderator, admin' }, { status: 400 })
+    }
 
     const serviceRoleClient = await createServiceRoleClient()
 

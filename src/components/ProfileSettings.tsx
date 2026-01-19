@@ -100,6 +100,10 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
   }
 
   const handleDeleteVacation = async (id: string) => {
+    if (!window.confirm('Möchtest du diesen Urlaubszeitraum wirklich löschen?')) {
+      return
+    }
+
     const { error } = await (supabase as any)
       .from('vacations')
       .delete()
@@ -137,6 +141,10 @@ export default function ProfileSettings({ user, profile }: ProfileSettingsProps)
   }
 
   const handleDeleteUnavailableDay = async (id: string) => {
+    if (!window.confirm('Möchtest du diesen F-Tag wirklich löschen?')) {
+      return
+    }
+
     const { error } = await (supabase as any)
       .from('unavailable_days')
       .delete()

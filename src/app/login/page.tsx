@@ -117,6 +117,8 @@ export default function LoginPage() {
             type="submit"
             disabled={loading}
             className="glass-button-primary w-full"
+            aria-label="Anmelden"
+            aria-busy={loading}
           >
             {loading ? 'Anmeldung läuft...' : 'Anmelden'}
           </button>
