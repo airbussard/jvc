@@ -46,15 +46,15 @@ export default function LoginPage() {
     >
       {/* Dekorative Blur-Kreise mit Parallax-Effekt */}
       <div
-        className="absolute top-20 left-20 w-72 h-72 bg-secondary-500/20 rounded-full blur-3xl transition-transform duration-300 ease-out"
+        className="absolute top-20 left-20 w-72 h-72 bg-accent-500/30 rounded-full blur-3xl transition-transform duration-300 ease-out"
         style={{ transform: `translate(${mousePosition.x * 30}px, ${mousePosition.y * 30}px)` }}
       ></div>
       <div
-        className="absolute bottom-20 right-20 w-96 h-96 bg-primary-400/20 rounded-full blur-3xl transition-transform duration-300 ease-out"
+        className="absolute bottom-20 right-20 w-96 h-96 bg-primary-400/25 rounded-full blur-3xl transition-transform duration-300 ease-out"
         style={{ transform: `translate(${mousePosition.x * 50}px, ${mousePosition.y * 50}px)` }}
       ></div>
       <div
-        className="absolute top-1/2 left-1/2 w-64 h-64 bg-secondary-400/15 rounded-full blur-3xl transition-transform duration-300 ease-out"
+        className="absolute top-1/2 left-1/2 w-64 h-64 bg-accent-400/20 rounded-full blur-3xl transition-transform duration-300 ease-out"
         style={{ transform: `translate(calc(-50% + ${mousePosition.x * 20}px), calc(-50% + ${mousePosition.y * 20}px))` }}
       ></div>
 
