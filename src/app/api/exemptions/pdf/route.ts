@@ -21,13 +21,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 })
   }
 
-  // Get user profile for authorization check
-  const { data: userProfile } = await supabase
-    .from('profiles')
-    .select('role, airline_id')
-    .eq('id', user.id)
-    .single()
-
   // Get airline_id and month from query params
   const airlineId = request.nextUrl.searchParams.get('airline_id')
   const month = request.nextUrl.searchParams.get('month') // Format: YYYY-MM
@@ -35,13 +28,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Airline ID fehlt' }, { status: 400 })
   }
 
-  // Authorization: User muss Admin sein ODER zur Airline gehören
-  const isAdmin = (userProfile as any)?.role === 'admin'
-  const belongsToAirline = (userProfile as any)?.airline_id === airlineId
-
-  if (!isAdmin && !belongsToAirline) {
-    return NextResponse.json({ error: 'Keine Berechtigung für diese Airline' }, { status: 403 })
-  }
+  // Alle authentifizierten Nutzer können PDFs für jede Airline exportieren
 
   try {
     // Load airline
