@@ -61,14 +61,14 @@ export default function LoginPage() {
       <div className="card w-full max-w-md p-8 animate-scale-in relative">
         {/* Logo und Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-secondary-400 to-secondary-600 shadow-lg shadow-secondary-500/30 mb-4 hover-lift">
-            <span className="text-2xl text-white font-bold">jVC</span>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary-900 shadow-lg shadow-primary-500/30 mb-4 hover-lift p-2">
+            <img src="/vc-logo.svg" alt="VC Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-neutral-900">
             Willkommen zurück
           </h1>
           <p className="mt-2 text-neutral-500">
-            jVC Terminverwaltungssystem
+            VC Terminverwaltung
           </p>
         </div>
 

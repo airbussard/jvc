@@ -12,8 +12,8 @@ export default function HomePage() {
 
       <div className="text-center relative z-10 animate-slide-up">
         {/* Logo */}
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-accent-500 mb-8 hover-lift shadow-lg">
-          <span className="text-3xl text-primary-900 font-bold">jVC</span>
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary-900 mb-8 hover-lift shadow-lg p-3">
+          <img src="/vc-logo.svg" alt="VC Logo" className="w-full h-full object-contain" />
         </div>
 
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-neutral-900 mb-4">
