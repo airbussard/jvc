@@ -68,7 +68,7 @@ export default function LoginPage() {
             Willkommen zurück
           </h1>
           <p className="mt-2 text-neutral-500">
-            VC Terminverwaltung
+            jVC Terminverwaltung
           </p>
         </div>
 
