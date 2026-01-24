@@ -33,7 +33,7 @@ export default function ExportDialog({ events, onClose }: ExportDialogProps) {
 
     const calendar = ical({
       name: 'jVC Termine',
-      description: 'Termine des Jugendverbands',
+      description: 'Termine der jVC',
       timezone: 'Europe/Berlin',
     })
 

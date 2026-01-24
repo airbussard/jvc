@@ -20,7 +20,7 @@ export default function HomePage() {
           Terminverwaltung
         </h1>
         <p className="text-lg sm:text-xl text-neutral-600 mb-10 max-w-lg mx-auto">
-          Das Planungstool für den Jugendverband.
+          Das Planungstool für die jVC.
           <br className="hidden sm:block" />
           Termine, Urlaube und Verfügbarkeiten auf einen Blick.
         </p>
