@@ -657,6 +657,20 @@ function mixHex(a, b, k) {
   return `#${((1 << 24) | (c[0] << 16) | (c[1] << 8) | c[2]).toString(16).slice(1)}`;
 }
 
+// Leinwand sofort freigeben (iOS zählt verworfene Canvas sonst bis zum nächsten GC zum Speicherlimit)
+export function freeCanvas(c) {
+  if (c) c.width = c.height = 0;
+}
+
+// Sprite-Bank leeren; alle Adler holen ihre Frames bei jedem Zeichnen neu aus der Bank
+function clearBank() {
+  for (const v of bank.values()) {
+    if (v.frames) v.frames.forEach(freeCanvas);
+    else freeCanvas(v);
+  }
+  bank.clear();
+}
+
 // Dunstfarbe aus dem Szenen-Thema; bei Wechsel werden die Sprites neu gemalt
 export function setSceneTint(airport) {
   const th = airport?.theme;
@@ -664,7 +678,7 @@ export function setSceneTint(airport) {
   if (/^#[0-9a-f]{6}$/i.test(th?.skyTop || '') && /^#[0-9a-f]{6}$/i.test(th?.skyBottom || '')) c = mixHex(th.skyTop, th.skyBottom, 0.55);
   if (c !== hazeColor) {
     hazeColor = c;
-    bank.clear();
+    clearBank();
   }
 }
 
@@ -696,6 +710,7 @@ function makeCanvas(box, res, paint, { haze = 0, glow = null } = {}) {
     g.drawImage(tmp, 0, 0);
     g.shadowBlur = 0;
     g.shadowColor = 'transparent';
+    freeCanvas(tmp);
   }
   return c;
 }
@@ -707,7 +722,7 @@ export function spriteRes(view) {
 function checkRes(view) {
   const r = spriteRes(view);
   if (r !== bankRes) {
-    bank.clear();
+    clearBank();
     bankRes = r;
   }
   return r;
@@ -988,9 +1003,8 @@ export class Eagle {
     if (this.y > 820) this.dead = true;
   }
 
-  // Nachschuss: Adler hüpft noch einmal hoch
+  // Nachschuss: Adler hüpft noch einmal hoch (followups zählt round.js schon beim Wurf)
   bump(fx) {
-    this.followups++;
     this.vy = -320 * (0.45 + 0.55 * this.s);
     this.spin *= -1.3;
     fx.feathers(this.layer, this.x, this.y, this.s, this.pal.feathers, 5);

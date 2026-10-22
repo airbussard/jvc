@@ -132,6 +132,34 @@ function ringSprite() {
 
 const CONFETTI_COLORS = ['#e3263b', '#ffcc33', '#2fbf71', '#3aa0ff', '#ffffff', '#ff7ab8'];
 
+// Layout-Rechtecke von UI-Elementen in CSS-Pixeln relativ zum Canvas (Transform-Animationen wie
+// Wackeln/Pulsieren zählen nicht mit). Ausgeblendete Elemente fehlen; ohne DOM → [].
+// Erzwingt ggf. ein Layout – nur selten bzw. gedrosselt aufrufen.
+function offsetPos(el) {
+  let x = 0, y = 0;
+  for (let n = el; n; n = n.offsetParent) {
+    x += n.offsetLeft;
+    y += n.offsetTop;
+  }
+  return [x, y];
+}
+export function uiRects(view, selector) {
+  const out = [];
+  try {
+    const canvas = view.stage?.canvas;
+    if (!canvas || typeof document === 'undefined') return out;
+    const [cx, cy] = offsetPos(canvas);
+    for (const el of document.querySelectorAll(selector)) {
+      const w = el.offsetWidth, h = el.offsetHeight;
+      if (!w || !h) continue;
+      const [x, y] = offsetPos(el);
+      out.push({ left: x - cx, top: y - cy, right: x - cx + w, bottom: y - cy + h });
+    }
+  } catch { /* ohne DOM (Tests) */ }
+  return out;
+}
+const HUD_BLOCKS = '.scr-hud .hud-top > *';
+
 // Vorwärm-Aufgaben: Sprites und Popup-Schrift vorab, damit der erste Treffer nicht ruckelt
 export function particleWarmTasks(featherPalettes) {
   const tasks = [() => getHatSprite(), () => puffSprite(), () => ringSprite()];
@@ -158,6 +186,7 @@ export class Particles {
     this.pool = [];
     this.popups = [];
     this.layerCount = { sky: 0, far: 0, mid: 0, near: 0 };
+    this.hud = { rects: [], at: -1e9, key: null };
     requestFonts();
   }
 
@@ -441,11 +470,28 @@ export class Particles {
     ctx.restore();
   }
 
-  // Punkte-Popups in Bildschirmkoordinaten, gut lesbar mit Kontur
-  drawPopups(ctx) {
+  // HUD-Blöcke oben (Punkte inkl. Combo-Badge, Uhr, Knöpfe); neu abgefragt bei Größen-/Combo-Wechsel, sonst gedrosselt
+  _hudRects(hudKey) {
+    const v = this.view, h = this.hud;
+    const now = globalThis.performance?.now?.() ?? Date.now();
+    const key = `${v.cssW}x${v.cssH}|${hudKey > 1}`;
+    if (key !== h.key || now - h.at > 400) {
+      h.key = key;
+      h.at = now;
+      h.rects = uiRects(v, HUD_BLOCKS);
+    }
+    return h.rects;
+  }
+
+  // Punkte-Popups in Bildschirmkoordinaten, gut lesbar mit Kontur; hudKey = aktueller Combo-Multiplikator
+  drawPopups(ctx, hudKey = 0) {
     if (!this.popups.length) return;
     const v = this.view;
     const base = Math.round(15 + 14 * v.scale);
+    const hud = this._hudRects(hudKey);
+    // nicht unter der HUD-Leiste oben bzw. der Mützenleiste unten verschwinden
+    const top0 = Math.min(90, Math.max(52, v.cssH * 0.12));
+    const placed = [];
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -457,12 +503,26 @@ export class Particles {
       // Aufploppen: kurz größer, dann normal
       const pop = k < 0.12 ? 0.55 + (k / 0.12) * 0.65 : k < 0.22 ? 1.2 - ((k - 0.12) / 0.1) * 0.2 : 1;
       const fs = Math.round(base * (pp.big ? 1.35 : 1) * pop);
-      // nicht unter der HUD-Leiste oben bzw. der Mützenleiste unten verschwinden
-      const top = Math.min(90, Math.max(52, v.cssH * 0.12));
-      sy = Math.min(Math.max(sy, top + fs * 0.55), v.cssH - 64 - (pp.sub ? base * 0.9 : 0) - fs * 0.5);
       // am Bildrand vollständig lesbar halten (Breite grob geschätzt, ohne measureText)
       const half = Math.max(fs * 0.4 * pp.text.length, pp.sub ? base * 0.2 * pp.sub.length : 0) + 6;
       sx = Math.min(Math.max(sx, half), v.cssW - half);
+      // unter dem HUD-Block bleiben, mit dem sich das Popup waagerecht überschneidet (z. B. Combo-Badge)
+      let top = top0;
+      for (const r of hud) if (sx + half > r.left && sx - half < r.right) top = Math.max(top, r.bottom + 6);
+      const below = pp.sub ? fs * 0.62 + base * 0.7 : fs * 0.5;
+      if (sy < top + fs * 0.55) {
+        sy = top + fs * 0.55;
+        // oben festgehaltene Popups nicht übereinanderlegen, sondern darunter staffeln
+        for (let i = 0; i < placed.length; i++) {
+          const q = placed[i];
+          if (Math.abs(sx - q.x) < half + q.half && sy - fs * 0.5 < q.bottom && sy + below > q.top) {
+            sy = q.bottom + fs * 0.55 + 2;
+            i = -1;
+          }
+        }
+      }
+      sy = Math.min(sy, v.cssH - 64 - (pp.sub ? base * 0.9 : 0) - fs * 0.5);
+      placed.push({ x: sx, half, top: sy - fs * 0.5, bottom: sy + below });
       ctx.globalAlpha = k > 0.72 ? (1 - k) / 0.28 : 1;
       ctx.font = `${fs}px ${POP_FONT}`;
       ctx.lineWidth = Math.max(3, fs * 0.2);

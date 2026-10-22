@@ -188,7 +188,7 @@ const TEMPLATE = `${SPRITE}
             <input id="weihad-name" class="entry-in" name="nickname" type="text" maxlength="16" autocomplete="nickname" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="send" placeholder="Dein Name" required>
             <button class="btn btn-red btn-sm entry-btn" type="submit"><span class="lbl">Eintragen</span></button>
           </div>
-          <p class="entry-msg" aria-live="polite"></p>
+          <p class="entry-msg" aria-live="polite" tabindex="-1"></p>
         </form>
       </div>
     </article>
@@ -400,6 +400,9 @@ class FlapBoard {
     this.spin = [];
     this.timer = 0;
     const head = root.querySelector('.board-cols');
+    // Screenreader: Liste mit je einem ausgeschriebenen Eintrag statt einzelner Kachel-Buchstaben
+    this.rowsEl.setAttribute('role', 'list');
+    head.setAttribute('aria-hidden', 'true');
     head.textContent = '';
     for (const c of cols) {
       const s = el('span', `bcol ${c.cls}`, c.label);
@@ -424,11 +427,19 @@ class FlapBoard {
     const now = performance.now();
     rows.forEach((r, ri) => {
       const row = el('div', `brow${r.own ? ' own' : ''}${r.sep ? ' sep' : ''}${r.msg ? ' msg' : ''}${r.blank ? ' blank' : ''}`);
+      if (r.blank || r.sep) {
+        row.setAttribute('aria-hidden', 'true');
+      } else {
+        row.setAttribute('role', 'listitem');
+        const pts = r.pts === '' || r.pts == null ? '' : `, ${fmt(r.pts)} Punkte`;
+        row.append(el('span', 'sr', r.msg || `${r.rank ? `Platz ${r.rank}: ` : ''}${r.name ?? ''}, ${r.ap ?? ''}${pts}${r.own ? ', dein Eintrag' : ''}`));
+      }
       let ci = 0;
       const groups = r.msg ? [{ cls: 'c-msg', len: this.cols.reduce((s, c) => s + c.len, 0), text: r.msg, align: 'center' }]
         : this.cols.map((c) => ({ ...c, text: r[c.key], extra: c.key === 'status' ? r.statusCls : '' }));
       for (const g of groups) {
         const span = el('span', `bcol ${g.cls}${g.extra ? ` ${g.extra}` : ''}`);
+        span.setAttribute('aria-hidden', 'true');
         span.style.setProperty('--n', g.len);
         let cells;
         if (g.align === 'center') {
@@ -1114,7 +1125,8 @@ export function createUI(handlers = {}) {
       overMsg(res.online ? `${parts.join(' · ')}. Guten Flug!` : `Offline – lokal gespeichert. ${parts.join(' · ')}`, res.online ? 'ok' : 'warn');
       audio.play('bonus');
       loadMini(lastOwn);
-      over.scr.querySelector('.js-first')?.focus({ preventScroll: true });
+      // Fokus auf die Meldung statt auf „Nochmal“: ein zweites Enter darf keine neue Runde starten
+      over.msg.focus({ preventScroll: true });
     } catch (err) {
       over.btn.disabled = false;
       overMsg(err?.message || 'Eintragen fehlgeschlagen – bitte erneut versuchen.', 'err');
@@ -1261,7 +1273,7 @@ export function createUI(handlers = {}) {
     let group = e.target?.closest?.('.nav-group');
     if (!group || !scr.contains(group)) {
       const first = scr.querySelector('.js-first') || scr.querySelector('button:not([disabled])');
-      if (first && !scr.contains(document.activeElement)) {
+      if (first && (!scr.contains(document.activeElement) || document.activeElement === over.msg)) {
         e.preventDefault();
         first.focus();
       }

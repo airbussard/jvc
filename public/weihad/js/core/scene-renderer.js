@@ -23,7 +23,8 @@ export class SceneRenderer {
     return Math.max(0.25, Math.min(wanted, Math.sqrt(MAX_LAYER_PIXELS / (w * h))));
   }
 
-  rebuild() {
+  // onlyChanged (nach Resize): nur Ebenen neu malen, deren Auflösung sich geändert hat
+  rebuild(onlyChanged = false) {
     const a = this.airport;
     if (!a) return;
     const seed = hashString(a.id);
@@ -32,6 +33,7 @@ export class SceneRenderer {
       const w = LAYER_W[id];
       const h = WORLD_H - top;
       const res = this._res(w, h);
+      if (onlyChanged && this.layers[id]?.res === res) continue;
       const canvas = this.layers[id]?.canvas || document.createElement('canvas');
       canvas.width = Math.ceil(w * res);
       canvas.height = Math.ceil(h * res);
@@ -46,14 +48,15 @@ export class SceneRenderer {
       }
       this.layers[id] = { canvas, res, top };
     }
-    this.rebuildSky();
+    this.rebuildSky(onlyChanged);
   }
 
-  rebuildSky() {
+  rebuildSky(onlyChanged = false) {
     const a = this.airport;
     if (!a) return;
     const w = Math.ceil(this.view.viewW);
     const res = this._res(w, WORLD_H);
+    if (onlyChanged && this.sky?.w === w && this.sky.res === res) return;
     const canvas = this.sky?.canvas || document.createElement('canvas');
     canvas.width = Math.ceil(w * res);
     canvas.height = Math.ceil(WORLD_H * res);
@@ -67,20 +70,28 @@ export class SceneRenderer {
     this.sky = { canvas, res, w };
   }
 
-  // ctx muss bereits per view.apply(ctx, id) transformiert sein
+  // Blittet in Gerätepixeln auf ganzzahlige Positionen: bei res == k eine reine 1:1-Kopie ohne
+  // Filterung (Software-Canvas ~4× schneller, Kulisse bleibt scharf). Hinterlässt ctx wie
+  // view.apply(ctx, id), weil danach drawDynamic/Verkehr in Ebenen-Koordinaten zeichnen.
   drawStatic(ctx, id) {
-    if (id === 'sky') {
-      if (!this.sky) return;
-      ctx.drawImage(this.sky.canvas, 0, 0, this.sky.w, WORLD_H);
-      return;
-    }
-    const L = this.layers[id];
+    const v = this.view;
+    const k = v.scale * v.dpr;
+    const L = id === 'sky' ? this.sky : this.layers[id];
     if (!L) return;
-    const off = Math.max(0, this.view.layerOffset(id));
-    const vw = Math.min(this.view.viewW, LAYER_W[id] - off);
-    const sx = off * L.res;
-    const sw = Math.min(L.canvas.width - sx, vw * L.res);
-    if (sw <= 0) return;
-    ctx.drawImage(L.canvas, sx, 0, sw, L.canvas.height, off, L.top, sw / L.res, L.canvas.height / L.res);
+    const s = k / L.res; // Gerätepixel je Quellpixel
+    let sx = 0;
+    let sw = L.canvas.width;
+    let dx = 0;
+    let dy = 0;
+    if (id !== 'sky') {
+      sx = Math.round(Math.max(0, v.layerOffset(id)) * L.res);
+      sw = Math.min(L.canvas.width - sx, Math.ceil(v.viewW * L.res) + 2);
+      if (sw <= 0) return;
+      dx = Math.round(sx * s - v.deviceOffset(id));
+      dy = Math.round(L.top * k);
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(L.canvas, sx, 0, sw, L.canvas.height, dx, dy, Math.round(sw * s), Math.round(L.canvas.height * s));
+    v.apply(ctx, id);
   }
 }

@@ -27,10 +27,16 @@ export class View {
     return extra >= 0 ? this.pan * extra : extra / 2;
   }
 
+  // Versatz der Ebene in ganzen Gerätepixeln – die Kulisse (scene-renderer) und alles,
+  // was per apply() in die Ebene zeichnet, bleiben so pixelgenau deckungsgleich
+  deviceOffset(id) {
+    return Math.round(this.layerOffset(id) * this.scale * this.dpr);
+  }
+
   // Setzt die Transformation so, dass in Ebenen-Weltkoordinaten gezeichnet werden kann
   apply(ctx, id) {
     const k = this.scale * this.dpr;
-    ctx.setTransform(k, 0, 0, k, -this.layerOffset(id) * k, 0);
+    ctx.setTransform(k, 0, 0, k, -this.deviceOffset(id), 0);
   }
 
   // Bildschirmkoordinaten in CSS-Pixeln

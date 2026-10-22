@@ -11,14 +11,19 @@ export class Stage {
     this.dpr = 1;
     this.scale = 1;
     this.listeners = [];
-    this._pending = 0;
-    const schedule = () => {
-      cancelAnimationFrame(this._pending);
-      this._pending = requestAnimationFrame(() => this.resize());
-    };
-    window.addEventListener('resize', schedule);
-    window.addEventListener('orientationchange', () => setTimeout(schedule, 120));
-    window.visualViewport?.addEventListener('resize', schedule);
+    // Nur vormerken: main.js ruft sync() am Frame-Anfang vor dem Zeichnen auf. Ein eigener rAF
+    // lief nach dem Render und hinterließ für ein Frame eine geleerte (schwarze) Canvas.
+    this._dirty = false;
+    const mark = () => { this._dirty = true; };
+    window.addEventListener('resize', mark);
+    window.addEventListener('orientationchange', () => setTimeout(mark, 120));
+    window.visualViewport?.addEventListener('resize', mark);
+    this.resize();
+  }
+
+  sync() {
+    if (!this._dirty) return;
+    this._dirty = false;
     this.resize();
   }
 
@@ -39,8 +44,11 @@ export class Stage {
     this.cssH = h;
     this.dpr = dpr;
     this.scale = h / WORLD_H;
-    this.canvas.width = Math.round(w * dpr);
-    this.canvas.height = Math.round(h * dpr);
+    // Zuweisen leert die Bitmap – nur bei echter Änderung
+    const pw = Math.round(w * dpr);
+    const ph = Math.round(h * dpr);
+    if (this.canvas.width !== pw) this.canvas.width = pw;
+    if (this.canvas.height !== ph) this.canvas.height = ph;
     this.canvas.style.width = `${w}px`;
     this.canvas.style.height = `${h}px`;
     if (changed) for (const cb of this.listeners) cb(this);

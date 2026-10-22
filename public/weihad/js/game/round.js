@@ -1,9 +1,9 @@
 // Eine Spielrunde (oder die dekorative Menü-Szene im Modus 'attract'):
 // Spawns & Schwierigkeit, Hitscan beim Wurf, Punkte/Combo/Strafen, Nachladen, Countdown, Events.
 import { ROUND_TIME, MAX_AMMO, RELOAD_TIME, LAYER_SCALE } from '../config.js';
-import { Particles, particleWarmTasks } from './particles.js';
-import { HatThrows, getHatSprite } from './hats.js';
-import { Flock, HAT_ON_HEAD, HAT_ON_PEEK, SPECIES, eagleWarmTasks, spriteRes, setSceneTint } from './eagles.js';
+import { Particles, particleWarmTasks, uiRects } from './particles.js';
+import { HatThrows, getHatSprite, HAT_FLIGHT } from './hats.js';
+import { Flock, HAT_ON_HEAD, HAT_ON_PEEK, PEEK_HEAD, SPECIES, eagleWarmTasks, spriteRes, setSceneTint } from './eagles.js';
 import { Gift, Sleigh, bonusWarmTasks } from './bonus.js';
 import { Snow } from './weather.js';
 
@@ -25,6 +25,10 @@ const WARM = [
 ];
 
 const comboMultiplier = (c) => (c >= 10 ? 4 : c >= 6 ? 3 : c >= 3 ? 2 : 1);
+// Nachschuss: höchstens 2 je Adler (beim Wurf reserviert) und nur, wenn er beim Landen der Mütze noch im Bild ist
+const canFollowup = (e) => e.state === 'fall' && e.followups < 2 && e.y < 700 && e.y + e.vy * HAT_FLIGHT < 760;
+// Bedienelemente über dem Canvas, die Taps abfangen (Halteleisten, Nachlade-Button, HUD-Knöpfe)
+const CONTROLS = '.scr-hud button';
 
 // Zuletzt benutzter Zeigertyp (Capture-Phase, also vor dem Schuss-Handler), damit die größeren
 // Touch-Trefferzonen auch nach einem Wechsel Maus ↔ Finger mitten in der Runde stimmen
@@ -283,9 +287,24 @@ export class Round {
   _spawnPeek() {
     const spots = (this.airport.hideSpots || []).filter((s) => s && LAYER_SCALE[s.layer] && s.layer !== 'sky');
     if (!spots.length) return;
-    const visible = spots.filter((s) => this.view.isVisible(s.layer, s.x, -30));
-    const pool = visible.length && this.rng.chance(0.8) ? visible : spots;
+    // nicht unter Halteleisten/Nachlade-Button auftauchen (dort wäre er verdeckt bzw. ein Tipp schwenkt/lädt nach)
+    const blocked = uiRects(this.view, CONTROLS);
+    const free = blocked.length ? spots.filter((s) => !this._peekBlocked(s, blocked)) : spots;
+    const visible = free.filter((s) => this.view.isVisible(s.layer, s.x, -30));
+    const pool = visible.length && this.rng.chance(0.8) ? visible : free.length ? free : spots;
     this.flock.spawnPeeker(this.rng.chance(0.5) ? 'stein' : 'weisskopf', pool);
+  }
+
+  // Liegt die Trefferzone eines Versteck-Adlers an dieser Kante (bei aktuellem Schwenk) unter einem Bedienelement?
+  _peekBlocked(spot, rects) {
+    const v = this.view;
+    const s = LAYER_SCALE[spot.layer];
+    const w = spot.w || 40;
+    const [k, minR] = this._hitParams();
+    // Kopfmitte wie in Flock.spawnPeeker/Peeker.hitDist; Radius + Streuung der Spawn-Position in CSS-px
+    const c = v.toScreen(spot.layer, spot.x + w / 4, spot.y + (PEEK_HEAD.y + 4) * s);
+    const pad = (Math.max(30 * s * k, minR) + 0.2 * w) * v.scale;
+    return rects.some((r) => c.x > r.left - pad && c.x < r.right + pad && c.y > r.top - pad && c.y < r.bottom + pad);
   }
 
   _spawnGift() {
@@ -355,7 +374,7 @@ export class Round {
       for (const e of this.flock.eagles) {
         if (e.layer !== L) continue;
         if (e.state === 'fly') consider(e, 'eagle', e.hitDist(p.x, p.y, k, minR));
-        else if (e.state === 'fall' && e.followups < 2 && e.y < 700) consider(e, 'followup', e.hitDist(p.x, p.y, k, minR), 0.3);
+        else if (canFollowup(e)) consider(e, 'followup', e.hitDist(p.x, p.y, k, minR), 0.3);
       }
       for (const pk of this.flock.peekers) if (pk.layer === L && pk.alive) consider(pk, 'peek', pk.hitDist(p.x, p.y, k, minR));
       for (const g of this.gifts) if (g.layer === L && g.alive) consider(g, 'gift', g.hitDist(p.x, p.y, k, minR));
@@ -411,6 +430,7 @@ export class Round {
         if (gold) this.fx.sparkles(L, hx, hy, obj.s, 14, { color: '#ffe066' });
       };
     } else if (type === 'followup') {
+      obj.followups++; // sofort reservieren: Schnellklicks während des Mützenflugs zählen sonst alle
       track = () => obj.hitCenter();
       endW = HAT_ON_HEAD.w * obj.s * v.scale;
       onLand = () => {
@@ -488,11 +508,14 @@ export class Round {
         this.score = Math.max(0, this.score - PENALTY);
         this._resetCombo();
         this.fx.puff(L, x, y, 0.6, 5, { ov: true });
-        // Flugzeug blinkt und trägt die Mütze fortan am Leitwerk; sonst fällt sie herunter
-        let stuck = false;
-        try { stuck = !!this.traffic?.markHit?.(plane.hit.id, { hat: true }); } catch { stuck = false; }
+        // Flugzeug blinkt und trägt die Mütze fortan am Leitwerk; sonst (auch beim Hubschrauber) fällt sie herunter
+        let stuck = false, heli = false;
+        try {
+          heli = this.traffic?.getAircraft?.(plane.hit.id)?.kind === 'heli';
+          stuck = !!this.traffic?.markHit?.(plane.hit.id, { hat: !heli }) && !heli;
+        } catch { stuck = false; }
         if (!stuck) this.fx.fallingHat(L, x, y, this._hatWorldSize(brim), 0.3, (Math.random() - 0.5) * 200, -320);
-        this.fx.popup(L, x, y - 20, `−${PENALTY}`, { color: '#ff5d5d', sub: 'Flugzeug!', subColor: '#ffd0d0' });
+        this.fx.popup(L, x, y - 20, `−${PENALTY}`, { color: '#ff5d5d', sub: heli ? 'Hubschrauber!' : 'Flugzeug!', subColor: '#ffd0d0' });
         this._emit('penalty', { points: -PENALTY, sx, sy, reason: PENALTY_REASON });
       },
     });
@@ -573,7 +596,7 @@ export class Round {
     for (const p of this.flock.peekers) if (p.alive) add(p.layer, ...p.headPos(), 1);
     for (const e of this.flock.eagles) {
       if (e.state === 'fly') add(e.layer, ...e.hitCenter(), e.species === 'gold' ? 1 : e.layer === 'far' ? 2 : 3);
-      else if (e.state === 'fall' && e.followups < 2 && e.y < 650) add(e.layer, ...e.hitCenter(), 5);
+      else if (canFollowup(e) && e.y < 650) add(e.layer, ...e.hitCenter(), 5);
     }
     out.sort((a, b) => a.prio - b.prio);
     return out;
@@ -604,7 +627,7 @@ export class Round {
     this.snow.draw(ctx);
     this.fx.drawOverlay(ctx);
     this.hats.drawOverlay(ctx);
-    this.fx.drawPopups(ctx);
+    this.fx.drawPopups(ctx, this.mode === 'play' ? this.multiplier : 0);
     ctx.restore();
   }
 

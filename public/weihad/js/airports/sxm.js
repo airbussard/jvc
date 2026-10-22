@@ -2454,8 +2454,10 @@ export default {
     runways: [{
       id: '10', layer: 'mid', y: RWY_Y, x1: RWY_X1, x2: RWY_X2, dir: 1, use: 'mixed',
       arrivalsPerMin: 3.4, departuresPerMin: 2.6,
-      // Tiefflieger im near-Layer: Fahrwerk knapp über den Köpfen am Zaun (Leute ≈ y 600–650)
-      approach: { startY: 120, lowFlyLayer: 'near', lowFlyY: 578, lowFlyPerMin: 2.2 },
+      // Tiefflieger im near-Layer, doppelt so groß wie der Pistenverkehr; Sinkflug lowFlyY−160 → lowFlyY+10.
+      // Fahrwerk bleibt in Bildmitte über der Terminal-Dachkante (≈ y 450): So donnert der Jet vor Himmel und
+      // Hügeln über den Strand, statt wie ein Riesenflugzeug auf Vorfeld/Rollweg (y 508–560) zu stehen.
+      approach: { startY: 120, lowFlyLayer: 'near', lowFlyY: 470, lowFlyPerMin: 2.2 },
     }],
     taxiways: [{ layer: 'mid', y: TWY_Y, x1: 190, x2: 2250 }],
     gates: GATES,

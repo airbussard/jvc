@@ -7,6 +7,7 @@ export class Input {
     this.pointer = { x: 0, y: 0, inside: false, type: 'mouse' };
     this.keys = new Set();
     this.holdPan = 0; // von Touch-Halteleisten gesetzt (-1 | 0 | 1)
+    this.edge = 0; // Maus im Pillarbox-Balken neben der Canvas: -1 links, 1 rechts (Schwenkzone)
     this.enabled = true;
     this.isTouch = forceTouch || window.matchMedia?.('(pointer: coarse)').matches || false;
     this._gestured = false;
@@ -17,7 +18,9 @@ export class Input {
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     window.addEventListener('keydown', (e) => this._key(e, true));
     window.addEventListener('keyup', (e) => this._key(e, false));
-    window.addEventListener('blur', () => this.keys.clear());
+    window.addEventListener('pointermove', (e) => this._edge(e));
+    document.addEventListener('mouseout', (e) => { if (!e.relatedTarget) this.edge = 0; }); // Fenster verlassen
+    window.addEventListener('blur', () => { this.keys.clear(); this.edge = 0; });
     // Doppeltipp-Zoom / Scrollen auf iOS verhindern
     canvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
     canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
@@ -73,22 +76,39 @@ export class Input {
     }
   }
 
+  _edge(e) {
+    if (e.pointerType !== 'mouse') { this.edge = 0; return; }
+    const r = this.canvas.getBoundingClientRect();
+    this.edge = e.clientX < r.left ? -1 : e.clientX >= r.right ? 1 : 0;
+  }
+
   _key(e, down) {
+    const k = (e.key || '').toLowerCase(); // Autofill schickt keydown ohne key
+    // Loslassen immer auswerten, auch im Namensfeld – sonst bleibt eine Schwenk-Taste hängen
+    if (!down) {
+      this.keys.delete(k);
+      // macOS schickt bei gedrückter Cmd-Taste kein keyup für andere Tasten
+      if (k === 'meta') this.keys.clear();
+      return;
+    }
     const tag = e.target?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-    const k = e.key.toLowerCase();
-    if (down) {
-      this._gesture();
-      if (!e.repeat) {
-        // Nur im Spiel abfangen – in Menüs soll die Leertaste fokussierte Buttons auslösen
-        if ((k === ' ' || k === 'r') && this.enabled) { e.preventDefault(); this.emit('reload'); }
-        else if (k === 'escape' || k === 'p') this.emit('pause');
-        else if (k === 'm') this.emit('mute');
-      }
-      this.keys.add(k);
-    } else {
-      this.keys.delete(k);
+    // Browser-Kürzel (Cmd/Strg+R, Cmd+M …) unangetastet lassen
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    this._gesture();
+    if (!e.repeat) {
+      // Nur im Spiel abfangen – in Menüs soll die Leertaste fokussierte Buttons auslösen
+      if ((k === ' ' || k === 'r') && this.enabled) { e.preventDefault(); this.emit('reload'); }
+      else if (k === 'escape' || k === 'p') this.emit('pause');
+      else if (k === 'm') this.emit('mute');
     }
+    this.keys.add(k);
+  }
+
+  // Gehaltene Tasten und Halteleisten vergessen (bei Zustandswechseln)
+  clearKeys() {
+    this.keys.clear();
+    this.holdPan = 0;
   }
 
   // -1 / 0 / 1 aus Tastatur + Halteleisten

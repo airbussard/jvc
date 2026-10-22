@@ -1,6 +1,6 @@
 // Boni: Geschenke am Fallschirm und Rentierschlitten mit Rudolph (prozedural, vorgerendert)
 import { LAYER_SCALE } from '../config.js';
-import { spriteRes } from './eagles.js';
+import { spriteRes, freeCanvas } from './eagles.js';
 
 const TAU = Math.PI * 2;
 const GIFT_BOX = { x0: -44, y0: -92, x1: 44, y1: 22 };
@@ -38,6 +38,7 @@ function makeCanvas(box, res, paint) {
 function cached(key, view, build) {
   const R = spriteRes(view);
   if (R !== cacheRes) {
+    cache.forEach(freeCanvas);
     cache.clear();
     cacheRes = R;
   }
@@ -550,7 +551,9 @@ export class Sleigh {
     this.dir = rng.sign();
     const S = this.s;
     this.x = this.dir > 0 ? -210 * S : view.viewW + 210 * S;
-    this.baseY = rng.range(85, 175);
+    // Höhe unterhalb der HUD-Leiste (wie Flock.zone), inkl. Schaukeln ±14 und Sprite-Oberkante
+    const top = Math.max(96, 64 / Math.max(0.3, view.scale || 1));
+    this.baseY = rng.range(top + 55, top + 130);
     this.y = this.baseY;
     this.speed = rng.range(200, 240);
     this.t = 0;

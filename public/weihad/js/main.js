@@ -51,6 +51,7 @@ class Game {
     this.airport = null;
     this.traffic = null;
     this.round = null;
+    this.roundNo = 0;
     this.time = 0;
     this.frozen = false;
     this.taps = []; // Touch-Feedback
@@ -80,13 +81,15 @@ class Game {
 
     let resizeTimer = 0;
     this.stage.onResize(() => {
-      this.scene.rebuildSky();
+      this.scene.rebuildSky(true);
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => this.scene.rebuild(), 250);
+      resizeTimer = setTimeout(() => this.scene.rebuild(true), 250);
     });
 
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden && this.state === 'playing') this.pause();
+      if (!document.hidden) return;
+      this.input.clearKeys();
+      if (this.state === 'playing') this.pause();
     });
 
     // Start-Szene
@@ -150,7 +153,8 @@ class Game {
       airport: this.airport,
       view: this.view,
       traffic: this.traffic,
-      rng: createRng(SEED ^ 0xadd1e),
+      // jede Runde eigener Zufall (erste wie bisher; mit ?seed reproduzierbar)
+      rng: createRng(SEED ^ 0xadd1e ^ Math.imul(this.roundNo++, 0x9e3779b9)),
       mode,
       isTouch: this.input.isTouch,
       onEvent: (type, data) => this.onRoundEvent(type, data),
@@ -170,7 +174,7 @@ class Game {
   toMenu() {
     this.state = 'menu';
     this.input.enabled = false;
-    this.input.holdPan = 0;
+    this.input.clearKeys();
     this.newRound('attract');
     this.ui.show('title');
     audio.startAmbience(this.airport.id);
@@ -190,6 +194,7 @@ class Game {
     this.view.pan = 0.5;
     this.newRound('play');
     this.state = 'playing';
+    this.input.clearKeys();
     this.input.enabled = true;
     this.ui.show('hud');
     audio.startAmbience(id);
@@ -199,7 +204,7 @@ class Game {
     if (this.state !== 'playing') return;
     this.state = 'paused';
     this.input.enabled = false;
-    this.input.holdPan = 0;
+    this.input.clearKeys();
     this.ui.show('pause');
   }
 
@@ -215,7 +220,7 @@ class Game {
     if (this.state !== 'playing') return;
     this.state = 'over';
     this.input.enabled = false;
-    this.input.holdPan = 0;
+    this.input.clearKeys();
     const stats = safe('round.getStats', () => this.round.getStats()) || this._fakeStats();
     // kurze Pause, damit der letzte Treffer noch sichtbar fällt
     setTimeout(() => this.ui.showGameOver(stats), 900);
@@ -238,10 +243,14 @@ class Game {
     if (this.state === 'playing') {
       dir = inp.panDir;
       const p = inp.pointer;
-      if (!dir && p.inside && p.type === 'mouse' && !inp.isTouch) {
-        const fx = p.x / this.view.cssW;
-        if (fx < EDGE_PAN_ZONE) dir = -(1 - fx / EDGE_PAN_ZONE);
-        else if (fx > 1 - EDGE_PAN_ZONE) dir = (fx - (1 - EDGE_PAN_ZONE)) / EDGE_PAN_ZONE;
+      if (!dir && p.type === 'mouse' && !inp.isTouch) {
+        if (p.inside) {
+          const fx = p.x / this.view.cssW;
+          if (fx < EDGE_PAN_ZONE) dir = -(1 - fx / EDGE_PAN_ZONE);
+          else if (fx > 1 - EDGE_PAN_ZONE) dir = (fx - (1 - EDGE_PAN_ZONE)) / EDGE_PAN_ZONE;
+        } else {
+          dir = inp.edge; // Maus im Pillarbox-Balken am Bildschirmrand
+        }
       }
       // Auf Touch etwas langsamer, damit man mit den Halteleisten fein zielen kann
       if (dir) this.view.panBy(dir * PAN_SPEED * (inp.isTouch ? 0.7 : 1) * dt);
@@ -258,10 +267,9 @@ class Game {
     this.updatePan(dt);
     safe('traffic.update', () => this.traffic?.update(dt, this.view));
     safe('round.update', () => this.round?.update(dt));
-    if (this.state === 'playing') {
-      safe('ui.updateHud', () => this.ui.updateHud(this.round.getHud()));
-      if (BOT) this.runBot(dt);
-    }
+    // auch nach Rundenende: Uhr springt auf 0:00, Zählanimation der letzten Treffer läuft aus
+    if (this.state === 'playing' || this.state === 'over') safe('ui.updateHud', () => this.ui.updateHud(this.round.getHud()));
+    if (this.state === 'playing' && BOT) this.runBot(dt);
     for (const tp of this.taps) tp.age += dt;
     this.taps = this.taps.filter((tp) => tp.age < 0.35);
   }
@@ -382,6 +390,7 @@ class Game {
   }
 
   frame(now) {
+    this.stage.sync(); // Größenänderung vor dem Zeichnen übernehmen
     const dt = Math.min(0.05, Math.max(0, (now - this.last) / 1000));
     this.last = now;
     this.frameAvg += (dt * 1000 - this.frameAvg) * 0.05;
