@@ -386,3 +386,11 @@ a44fd0f feat: Complete Glassmorphism UI redesign with dark blue and green theme
 1. CapRover Force-Build ohne Cache durchführen
 2. Prüfen ob alle Änderungen sichtbar sind
 3. Optional: Weitere Design-Anpassungen nach Feedback
+---
+
+## WeihAd-Browserspiel unter /weihad (Oktober 2026)
+
+- Statisches Spiel in `public/weihad/` – **nicht hier editieren**, Quelle ist `../weihad/public/` (Deploy: `../weihad/tools/deploy.sh "Nachricht"` kopiert, committet, pusht und löst den CapRover-Build aus).
+- Rewrite `/weihad` → `/weihad/index.html` in `next.config.mjs`.
+- Bestenlisten-API `src/app/api/weihad/scores/route.ts` + `src/lib/weihad-db.ts` (Paket `pg`), eigene PostgreSQL-Instanz `weihad-postgres` auf dem CapRover-Server, Verbindung über Env-Variable `WEIHAD_DATABASE_URL`.
+- Hinweis: Der GitHub-Webhook löst CapRover-Builds derzeit nicht aus – `deploy.sh` triggert den Build per SSH über den App-Webhook-Token.

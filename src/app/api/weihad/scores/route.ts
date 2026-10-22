@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { getWeihadPool, ensureWeihadSchema } from '@/lib/weihad-db'
 
@@ -8,8 +9,12 @@ export const runtime = 'nodejs'
 const AIRPORTS = ['FRA', 'JFK', 'DXB', 'SXM', 'HND'] as const
 type Airport = typeof AIRPORTS[number]
 
-const MAX_SCORE = 200_000
+// Fehlerfreies Spiel (jeder der ca. 100 Adler ×4 samt Nachschüssen) ergibt simuliert höchstens ~56k
+const MAX_SCORE = 60_000
 const MAX_SHOTS = 600 // 90 s Runde, 8er-Magazin mit Nachladezeit
+// Obergrenzen je Runde laut public/weihad/js/game/round.js (goldTimes, peekT ≥ 7 s bzw. 4,2 s im Endspurt)
+const MAX_GOLD = 2
+const MAX_PEEK = 15
 const NAME_PATTERN = /^[\p{L}\p{N} ._\-!?'&+#]+$/u
 
 // Einfaches Rate-Limit pro IP (eine Instanz → In-Memory reicht)
@@ -57,6 +62,29 @@ function cleanName(raw: unknown): string | null {
   return name
 }
 
+// Wie comboMultiplier() im Spiel: ab Combo 3/6/10 → ×2/×3/×4
+function comboMultiplier(combo: number): number {
+  return combo >= 10 ? 4 : combo >= 6 ? 3 : combo >= 3 ? 2 : 1
+}
+
+// Höchstmögliche Punktzahl für diese Trefferzahl: jeder Treffer höchstens Weißkopf fern (150) × Multiplikator,
+// dazu der Aufschlag für die wenigen Gold- (500) und Versteck-Adler (250); Geschenke/Nachschüsse liegen darunter
+function maxScore(hits: number, bestCombo: number): number {
+  const m = comboMultiplier(bestCombo)
+  const gold = Math.min(hits, MAX_GOLD)
+  return m * (150 * hits + 350 * gold + 100 * Math.min(hits - gold, MAX_PEEK))
+}
+
+// Moderation nur mit WEIHAD_ADMIN_TOKEN (mind. 24 Zeichen); ohne Token ist DELETE abgeschaltet
+function isAdmin(request: NextRequest): boolean {
+  const token = process.env.WEIHAD_ADMIN_TOKEN || ''
+  if (token.length < 24) return false
+  const given = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
+  // Hashes gleicher Länge → zeitkonstanter Vergleich
+  const digest = (v: string) => createHash('sha256').update(v).digest()
+  return timingSafeEqual(digest(given), digest(token))
+}
+
 function unavailable(err?: unknown) {
   if (err) console.error('[weihad] DB-Fehler:', err instanceof Error ? err.message : err)
   return NextResponse.json(
@@ -100,12 +128,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Anfrage zu groß' }, { status: 413, headers: NO_STORE })
   }
 
-  let body: Record<string, unknown>
+  let raw: unknown
   try {
-    body = await request.json()
+    raw = await request.json()
   } catch {
+    raw = null
+  }
+  // Auch null, Arrays und einfache Werte sind gültiges JSON, aber kein Eintrag
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     return NextResponse.json({ error: 'Ungültiges JSON-Format' }, { status: 400, headers: NO_STORE })
   }
+  const body = raw as Record<string, unknown>
 
   const name = cleanName(body.name)
   if (!name) {
@@ -130,8 +163,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Ungültige Spielwerte' }, { status: 400, headers: NO_STORE })
   }
 
-  // Plausibilität: max. 500 Punkte × Combo 4 pro Treffer, plus Puffer für Boni
-  if (score > (hits + 5) * 2_000) {
+  // Plausibilität: Punktzahl muss mit Treffern und bester Combo erreichbar sein
+  if (score > maxScore(hits as number, bestCombo as number)) {
     return NextResponse.json({ error: 'Punktzahl nicht plausibel' }, { status: 400, headers: NO_STORE })
   }
 
@@ -167,6 +200,31 @@ export async function POST(request: NextRequest) {
       },
       { status: 201, headers: NO_STORE }
     )
+  } catch (err) {
+    return unavailable(err)
+  }
+}
+
+// Eintrag entfernen (Spam/Cheater): DELETE /api/weihad/scores?id=123 mit „Authorization: Bearer <WEIHAD_ADMIN_TOKEN>“
+export async function DELETE(request: NextRequest) {
+  if (!isAdmin(request)) {
+    return NextResponse.json({ error: 'Nicht berechtigt' }, { status: 401, headers: NO_STORE })
+  }
+  const pool = getWeihadPool()
+  if (!pool) return unavailable()
+
+  const id = new URL(request.url).searchParams.get('id') || ''
+  if (!/^[1-9]\d{0,17}$/.test(id)) {
+    return NextResponse.json({ error: 'Ungültige ID' }, { status: 400, headers: NO_STORE })
+  }
+
+  try {
+    await ensureWeihadSchema(pool)
+    const result = await pool.query('DELETE FROM scores WHERE id = $1', [id])
+    if (!result.rowCount) {
+      return NextResponse.json({ error: 'Eintrag nicht gefunden' }, { status: 404, headers: NO_STORE })
+    }
+    return NextResponse.json({ deleted: Number(id) }, { headers: NO_STORE })
   } catch (err) {
     return unavailable(err)
   }
