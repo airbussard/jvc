@@ -1,0 +1,6 @@
+/* PLATZHALTER – wird vom UI-Agent ersetzt */
+html, body { margin: 0; height: 100%; background: #05070d; overflow: hidden; }
+#stage { position: relative; margin: 0 auto; touch-action: none; }
+#game { display: block; cursor: crosshair; }
+#ui-root { position: absolute; inset: 0; pointer-events: none; }
+#ui-root * { pointer-events: auto; }

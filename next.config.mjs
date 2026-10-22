@@ -3,6 +3,10 @@ const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   serverExternalPackages: ['pdfkit'],
+  // WeihAd-Browserspiel liegt statisch in public/weihad/
+  async rewrites() {
+    return [{ source: '/weihad', destination: '/weihad/index.html' }]
+  },
   async headers() {
     return [
       {
