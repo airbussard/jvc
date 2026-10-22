@@ -9,10 +9,25 @@ export function linearSky(ctx, w, h, stops) {
   ctx.fillRect(0, 0, w, h);
 }
 
+// Gleiche Farbe mit Alpha 0 – ein Ausblenden nach rgba(0,0,0,0) würde graue Halos erzeugen
+export function transparentOf(color) {
+  const c = String(color).trim();
+  let m = c.match(/^#([0-9a-f]{3,8})$/i);
+  if (m) {
+    let h = m[1];
+    if (h.length <= 4) h = [...h].map((ch) => ch + ch).join('');
+    const n = parseInt(h.slice(0, 6), 16);
+    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},0)`;
+  }
+  m = c.match(/^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/i);
+  if (m) return `rgba(${m[1]},${m[2]},${m[3]},0)`;
+  return 'rgba(0,0,0,0)';
+}
+
 export function glow(ctx, x, y, r, color, alpha = 1) {
   const g = ctx.createRadialGradient(x, y, 0, x, y, r);
   g.addColorStop(0, color);
-  g.addColorStop(1, 'rgba(0,0,0,0)');
+  g.addColorStop(1, transparentOf(color));
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.fillStyle = g;

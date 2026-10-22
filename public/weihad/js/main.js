@@ -96,6 +96,7 @@ class Game {
 
     if (params.get('play') === '1') {
       this.startRound(this.airport.id);
+      if (params.has('pan')) this.view.pan = Math.max(0, Math.min(1, Number(params.get('pan'))));
     } else {
       this.toMenu();
       const screen = params.get('screen');
@@ -135,6 +136,7 @@ class Game {
     const airport = getAirport(id) || AIRPORTS[0];
     this.airport = airport;
     this.scene.setAirport(airport);
+    safe('ui.setAirport', () => this.ui.setAirport?.(airport.id));
     const rng = createRng(SEED ^ hashString(airport.id));
     this.traffic = safe('traffic.new', () => new TrafficSystem(airport.traffic || {}, {
       rng,
@@ -241,7 +243,8 @@ class Game {
         if (fx < EDGE_PAN_ZONE) dir = -(1 - fx / EDGE_PAN_ZONE);
         else if (fx > 1 - EDGE_PAN_ZONE) dir = (fx - (1 - EDGE_PAN_ZONE)) / EDGE_PAN_ZONE;
       }
-      if (dir) this.view.panBy(dir * PAN_SPEED * dt);
+      // Auf Touch etwas langsamer, damit man mit den Halteleisten fein zielen kann
+      if (dir) this.view.panBy(dir * PAN_SPEED * (inp.isTouch ? 0.7 : 1) * dt);
     } else if (this.state === 'menu' && !params.has('pan')) {
       // Langsamer Kameraschwenk im Hintergrund der Menüs
       this.view.pan = 0.5 + 0.48 * Math.sin(this.time * 0.035);
@@ -301,7 +304,11 @@ class Game {
         v.apply(ctx, id);
       }
       safe(`round.drawLayer.${id}`, () => this.round.drawLayer(ctx, id, v));
-      if (DEBUG) safe(`round.debugDraw.${id}`, () => this.round.debugDraw?.(ctx, id, v));
+      if (DEBUG) {
+        safe(`round.debugDraw.${id}`, () => this.round.debugDraw?.(ctx, id, v));
+        v.apply(ctx, id);
+        safe(`traffic.debugDraw.${id}`, () => this.traffic?.debugDraw?.(ctx, id, v));
+      }
     }
 
     v.applyScreen(ctx);

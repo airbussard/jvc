@@ -1,0 +1,8 @@
+Selbst gehostete Schriften (keine Laufzeit-Requests an Dritte)
+
+bungee-400.woff2              Bungee (David Jonathan Ross)        SIL OFL 1.1 – siehe OFL-Bungee.txt
+barlow-condensed-600/700/800  Barlow Condensed (Jeremy Tribby)    SIL OFL 1.1 – siehe OFL-BarlowCondensed.txt
+barlow-500/700                Barlow (Jeremy Tribby)              SIL OFL 1.1 – siehe OFL-Barlow.txt
+
+Bezugsquelle: npm-Pakete @fontsource/bungee, @fontsource/barlow-condensed, @fontsource/barlow
+(Latin-Teilmenge, unverändert). Die Schriften dürfen gemäß OFL frei verwendet und weitergegeben werden.

@@ -3,14 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <title>WeihAd – Die Weihnachts-Adler-Jagd</title>
+  <title>WEIHAD – Die Weihnachts-Adler-Jagd</title>
+  <meta name="description" content="WEIHAD – Die Weihnachts-Adler-Jagd: Wirf Weihnachtsmützen auf Adler über Frankfurt, New York, Dubai, Sint Maarten und Tokio. Browser-Spiel für Desktop und Handy mit Bestenliste.">
+  <meta name="theme-color" content="#0a0f22">
+  <meta name="color-scheme" content="dark">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WEIHAD">
+  <meta name="format-detection" content="telephone=no">
+  <meta property="og:title" content="WEIHAD – Die Weihnachts-Adler-Jagd">
+  <meta property="og:description" content="Weihnachtsmützen auf Adler – über fünf der verkehrsreichsten Flughäfen der Welt.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="/weihad/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/weihad/apple-touch-icon.png">
+  <link rel="manifest" href="/weihad/manifest.webmanifest">
+  <link rel="preload" href="/weihad/fonts/bungee-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/weihad/fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/weihad/fonts/barlow-condensed-800.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/weihad/css/style.css">
 </head>
 <body>
   <div id="stage">
-    <canvas id="game"></canvas>
+    <canvas id="game" aria-label="Spielfläche"></canvas>
     <div id="ui-root"></div>
   </div>
+  <noscript><p style="color:#fff;font:16px sans-serif;text-align:center;padding:2em">WEIHAD braucht JavaScript – bitte aktivieren.</p></noscript>
   <script type="module" src="/weihad/js/main.js"></script>
 </body>
 </html>

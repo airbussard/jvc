@@ -80,7 +80,8 @@ export class Input {
     if (down) {
       this._gesture();
       if (!e.repeat) {
-        if (k === ' ' || k === 'r') { e.preventDefault(); if (this.enabled) this.emit('reload'); }
+        // Nur im Spiel abfangen – in Menüs soll die Leertaste fokussierte Buttons auslösen
+        if ((k === ' ' || k === 'r') && this.enabled) { e.preventDefault(); this.emit('reload'); }
         else if (k === 'escape' || k === 'p') this.emit('pause');
         else if (k === 'm') this.emit('mute');
       }

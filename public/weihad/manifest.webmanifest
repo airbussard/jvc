@@ -1,0 +1,17 @@
+{
+  "name": "WEIHAD – Die Weihnachts-Adler-Jagd",
+  "short_name": "WEIHAD",
+  "description": "Weihnachtsmützen auf Adler – über fünf berühmten Flughäfen.",
+  "lang": "de",
+  "start_url": "/weihad",
+  "scope": "/weihad",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#05070d",
+  "theme_color": "#0a0f22",
+  "icons": [
+    { "src": "/weihad/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/weihad/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/weihad/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ]
+}
